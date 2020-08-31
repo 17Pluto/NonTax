@@ -4,7 +4,7 @@
 	<select id="get" resultType="Collections" parameterType="Collections">
 		SELECT
 			uc.CHR_ID as chrId, uc.BILL_NO as billNo, uc.BILLTYPE_ID as billtypeId, UC.EN_ID as enId, EIE.CHR_CODE as enCode,
-			uc.PAYERID as payerid, uc.PAYER as payerName, eu.ACCOUNT_NAME as enAccountNo, uc.REMARK as remark, uc.CREATE_USER as createUser,
+			uc.PAYERID as payerid, uc.PAYER as payerName, eu.ACCOUNT_NO as enAccountNo, uc.REMARK as remark, uc.CREATE_USER as createUser,
 			UC.PM_ID as pmId, UC.MAKEDATE as makedate,uc.RECEIVETYPE as receivetype,
 			CASE WHEN uc.RECEIVETYPE = 1 THEN( SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTIONDETAIL WHERE main_id = uc.CHR_ID)
 			WHEN uc.RECEIVETYPE = 2 THEN( SELECT SUM (CHARGEMONEY) FROM UNTAX_EDU_COLLECTION_DETAIL WHERE STU_MAINID = uc.CHR_CODE4)

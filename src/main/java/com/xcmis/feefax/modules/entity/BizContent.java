@@ -53,7 +53,7 @@ public class BizContent {
         chg_code = c.getEnCode();
         chg_name = c.getEnName();
         payer_name = c.getPayerName();
-        payer_acct = c.getEnAccountNo();
+        payer_acct = c.getPayeraccount();
         payer_opbk = "";
         rec_acctype = "1";
         rec_name = c.getReceName();
