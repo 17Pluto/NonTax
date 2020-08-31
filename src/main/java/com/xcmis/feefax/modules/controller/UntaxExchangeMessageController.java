@@ -494,65 +494,68 @@ public class UntaxExchangeMessageController {
                 String payerbank = bizContentObject.getString("payer_opbk");
 
                 if(acctype.equals("6")) {
-                    UntaxNosource untaxNosource = new UntaxNosource();
-                    IncomeEnterprise incomeEnterprise = new IncomeEnterprise();
-                    IncomeBankAccount incomeBankAccount = new IncomeBankAccount();
-                    if(recAcct.length() == 20){
-                        incomeBankAccount.setChrCode(recAcct.substring(0, 14));
-                        incomeEnterprise.setChrCode(recAcct.substring(14, 20));
-                    }else if(recAcct.length() == 27){
-                        incomeBankAccount.setChrCode(recAcct.substring(0, 17));
-                        incomeEnterprise.setChrCode(recAcct.substring(21, 27));
-                    }else{
-                        incomeBankAccount.setChrCode(recAcct);
-                    }
-                    if(incomeEnterprise.getChrCode() != null){
-                        if(!incomeEnterprise.getChrCode().equals("")){
-                            incomeEnterprise = incomeEnterpriseService.get(incomeEnterprise);
+                    if (payer != null) {
+                        if (!payer.equals("")) {
+                            UntaxNosource untaxNosource = new UntaxNosource();
+                            IncomeEnterprise incomeEnterprise = new IncomeEnterprise();
+                            IncomeBankAccount incomeBankAccount = new IncomeBankAccount();
+                            if (recAcct.length() == 20) {
+                                incomeBankAccount.setChrCode(recAcct.substring(0, 14));
+                                incomeEnterprise.setChrCode(recAcct.substring(14, 20));
+                            } else if (recAcct.length() == 27) {
+                                incomeBankAccount.setChrCode(recAcct.substring(0, 17));
+                                incomeEnterprise.setChrCode(recAcct.substring(21, 27));
+                            } else {
+                                incomeBankAccount.setChrCode(recAcct);
+                            }
+                            if (incomeEnterprise.getChrCode() != null) {
+                                if (!incomeEnterprise.getChrCode().equals("")) {
+                                    incomeEnterprise = incomeEnterpriseService.get(incomeEnterprise);
+                                }
+                            }
+                            incomeBankAccount = incomeBankAccountService.get(incomeBankAccount);
+
+                            untaxNosource.setPayer(payer);
+                            untaxNosource.setPayerbank(payerbank);
+                            untaxNosource.setPayeraccount(payeraccount);
+                            untaxNosource.setReceiverid(incomeBankAccount.getChrId());
+                            untaxNosource.setReceiver(incomeBankAccount.getAccountName());
+                            untaxNosource.setReceiverbank(incomeBankAccount.getBankName());
+                            untaxNosource.setReceiveraccount(incomeBankAccount.getAccountNo());
+                            untaxNosource.setBankNo(recAcct);
+                            untaxNosource.setIsClaim(1);
+                            untaxNosource.setIsAudit(1);
+
+                            //目前润州专用
+                            if (recAcct.equals("00025690055012") || recAcct.equals("10310901040005922")) {
+                                untaxNosource.setEnId("{3B03B9E1-B580-11E6-845C-8BAB5125F985}");
+                            } else {
+                                untaxNosource.setEnId(incomeEnterprise.getChrId());
+                            }
+
+                            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+                            Date dtf = format.parse(arrivalTime);
+                            String strDateFormat = "yyyy-MM-dd HH:mm:ss";
+                            SimpleDateFormat sdf = new SimpleDateFormat(strDateFormat);
+                            untaxNosource.setEventtime(sdf.format(dtf));
+                            untaxNosource.setCheckmoney(Double.valueOf(amount));
+
+                            untaxNosource.setSetYear(DateTimeUtils.getCurrentYear());
+                            untaxNosource.setCreateDate(DateTimeUtils.getDateTimeStr1());
+                            untaxNosource.setLastVer(DateTimeUtils.getDateTimeStr1());
+                            untaxNosource.setRgCode(regionService.get(null).getChrCode());
+                            untaxNosource.setBatchno(tradeNo);
+
+                            untaxNosourceService.insert(untaxNosource);
+
+                            bizResponseContent = new BizResponseContent("00000", "成功");
+                            postData.put("wp_outer_account_arrival_response", bizResponseContent);
+                            System.out.println(postData.toString());
+                            out.write(postData.toString());
+                            out.flush();
                         }
                     }
-                    incomeBankAccount = incomeBankAccountService.get(incomeBankAccount);
-
-                    untaxNosource.setPayer(payer);
-                    untaxNosource.setPayerbank(payerbank);
-                    untaxNosource.setPayeraccount(payeraccount);
-                    untaxNosource.setReceiverid(incomeBankAccount.getChrId());
-                    untaxNosource.setReceiver(incomeBankAccount.getAccountName());
-                    untaxNosource.setReceiverbank(incomeBankAccount.getBankName());
-                    untaxNosource.setReceiveraccount(incomeBankAccount.getAccountNo());
-                    untaxNosource.setBankNo(recAcct);
-                    untaxNosource.setIsClaim(1);
-                    untaxNosource.setIsAudit(1);
-
-                    //目前润州专用
-                    if(recAcct.equals("00025690055012") || recAcct.equals("10310901040005922")){
-                        untaxNosource.setEnId("{3B03B9E1-B580-11E6-845C-8BAB5125F985}");
-                    }else {
-                        untaxNosource.setEnId(incomeEnterprise.getChrId());
-                    }
-
-                    SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-                    Date dtf = format.parse(arrivalTime);
-                    String strDateFormat = "yyyy-MM-dd HH:mm:ss";
-                    SimpleDateFormat sdf = new SimpleDateFormat(strDateFormat);
-                    untaxNosource.setEventtime(sdf.format(dtf));
-                    untaxNosource.setCheckmoney(Double.valueOf(amount));
-
-                    untaxNosource.setSetYear(DateTimeUtils.getCurrentYear());
-                    untaxNosource.setCreateDate(DateTimeUtils.getDateTimeStr1());
-                    untaxNosource.setLastVer(DateTimeUtils.getDateTimeStr1());
-                    untaxNosource.setRgCode(regionService.get(null).getChrCode());
-                    untaxNosource.setBatchno(tradeNo);
-
-                    untaxNosourceService.insert(untaxNosource);
-
-                    bizResponseContent = new BizResponseContent("00000", "成功");
-                    postData.put("wp_outer_account_arrival_response", bizResponseContent);
-                    System.out.println(postData.toString());
-                    out.write(postData.toString());
-                    out.flush();
                 }
-
             }else if ("wp.outer.bill.refund".equals(map.get("method"))) {
                 BizResponseContent bizResponseContent;
                 String bizContent = map.get("biz_content");

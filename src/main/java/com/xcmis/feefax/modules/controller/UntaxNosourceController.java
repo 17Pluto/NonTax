@@ -52,6 +52,9 @@ public class UntaxNosourceController {
     @Autowired
     private UnitItemService unitItemService;
 
+    @Autowired
+    private GlZwService glZwService;
+
     @Value("${issubaccount}")
     private boolean isSubAccount;
 
@@ -306,6 +309,16 @@ public class UntaxNosourceController {
             UntaxNosource untaxNosource = new UntaxNosource();
             untaxNosource.setChrId(chrId);
             untaxNosource = untaxNosourceService.get(untaxNosource);
+
+            GlZw glZw = new GlZw();
+            glZw.setBillId(untaxNosource.getChrId() + untaxNosource.getBatchno());
+            List<GlZw> list = glZwService.findAllList(glZw);
+
+            if(list != null){
+                if(list.size() > 0){
+                    return new Result<>(Globals.OP_FAILURE, Globals.FAILED_CODE);
+                }
+            }
 
             if(untaxNosource.getIsCollect() == 1){
                 return new Result<>(Globals.OP_FAILURE, Globals.FAILED_CODE);

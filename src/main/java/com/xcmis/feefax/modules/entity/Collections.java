@@ -186,7 +186,17 @@ public class Collections extends CommonEntity{
     private String errorMsg;
     private String consigneeEnName;
     private String consigneeEnCode;
+
+    private String paymode;
     private List<IncomeEnterprise> incomeEnterpriseList;
+
+    public String getPaymode() {
+        return paymode;
+    }
+
+    public void setPaymode(String paymode) {
+        this.paymode = paymode;
+    }
 
     public List<IncomeEnterprise> getIncomeEnterpriseList() {
         return incomeEnterpriseList;
