@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BudgetSubjectIncomeDao">
+	<select id="get" resultType="BudgetSubjectIncome" parameterType="String">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,
+ 			IS_DELETED,LATEST_OP_USER,LAST_VER,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,RG_CODE,PARENT_ID,CHR_ID1,
+ 			CHR_ID2,CHR_ID3,CHR_ID4,CHR_ID5,TYPE_ID,SUBITEM_TYPE
+		FROM
+			ELE_BUDGET_SUBJECT_INCOME
+		WHERE
+			IS_DELETED=0
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+			<if test="chrCode != null and chrCode != '' ">
+				AND CHR_CODE=#{chrCode}
+			</if>
+	</select>
+	
+	<insert id="insert" parameterType="BudgetSubjectIncome" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BUDGETSUBJECTINCOME_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			ELE_BUDGET_SUBJECT_INCOME(SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,
+				IS_LEAF,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,
+				LATEST_OP_USER,LAST_VER,PARENT_ID,RG_CODE,ENABLED,PARENT_NAME,TYPE_ID,SUBITEM_TYPE)
+		VALUES
+			(#{setYear},#{chrId},#{chrCode},#{dispCode},#{chrName},#{levelNum},
+				#{isLeaf},#{createDate},#{createUser},#{latestOpDate},
+				#{latestOpUser},#{lastVer},#{parentId},#{rgCode},#{enabled},#{parentName},#{typeId},#{subitemType})
+	</insert> 
+	
+	<delete id="delete" parameterType="BudgetSubjectIncome" >
+		UPDATE 
+			ELE_BUDGET_SUBJECT_INCOME
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete> 
+	
+	<update id="update" parameterType="BudgetSubjectIncome">
+		UPDATE
+			ELE_BUDGET_SUBJECT_INCOME
+		<set>
+			<if test="setYear != null and setYear != '' ">
+				SET_YEAR=#{setYear},
+			</if>
+			<if test="chrCode != null and chrCode != '' ">
+				CHR_CODE=#{chrCode},
+			</if>
+			<if test="dispCode != null and dispCode != '' ">
+				DISP_CODE=#{dispCode},
+			</if>
+			<if test="chrName != null and chrName != '' ">
+				CHR_NAME=#{chrName},
+			</if>
+			<if test="levelNum != null and levelNum != '' ">
+				LEVEL_NUM=#{levelNum},
+			</if>
+			<if test="parentId != null and parentId != '' ">
+				PARENT_ID=#{parentId},
+			</if>
+			<if test="parentName != null and parentName != '' ">
+				PARENT_NAME=#{parentName},
+			</if>
+			<if test="typeId != null and typeId != '' ">
+				TYPE_ID=#{typeId},
+			</if>
+			<if test="subitemType != null and subitemType != '' ">
+				SUBITEM_TYPE=#{subitemType},
+			</if>
+			ENABLED=#{enabled},
+		</set>
+		WHERE 
+			CHR_ID=#{chrId}
+	</update>
+	
+	
+		
+	<select id="getBudgetSubjectIncomeListTotal" resultType="long" parameterType="BudgetSubjectIncome">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			ELE_BUDGET_SUBJECT_INCOME
+		WHERE
+			IS_DELETED = '0'
+        <if test="setYear != null and setYear != '' ">
+            AND SET_YEAR = #{setYear}
+        </if>
+		<if test="chrId != null and chrId != '' ">
+			start with CHR_ID = #{chrId} connect by prior CHR_ID = PARENT_ID
+		</if>
+	</select>
+	
+	<select id="getBudgetSubjectIncomeListByCondition" resultType="BudgetSubjectIncome" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, vui.* FROM (
+				SELECT
+					vui.CHR_CODE as chrCode,vui.DISP_CODE as dispCode,vui.CHR_NAME as chrName,vui.LEVEL_NUM as levelNum,vui.ENABLED as enabled,vui.IS_DELETED as isDeleted,
+					vui.IS_LEAF as isLeaf, vui.CHR_ID as chrId, vui.TYPE_ID as typeId, vui.SUBITEM_TYPE as subitemType, nvl(vui1.CHR_NAME, '全部') as parentName,
+					nvl(vui.PARENT_ID, 'allTree') as parentId
+				FROM
+					ELE_BUDGET_SUBJECT_INCOME vui, ELE_BUDGET_SUBJECT_INCOME vui1
+    			WHERE
+					vui.IS_DELETED = '0' and vui.PARENT_ID = vui1.CHR_ID(+)
+                    <if test="budgetSubjectIncome.setYear != null and budgetSubjectIncome.setYear != '' ">
+                        AND vui.SET_YEAR = #{budgetSubjectIncome.setYear}
+                    </if>
+					<if test="budgetSubjectIncome.chrId != null and budgetSubjectIncome.chrId != '' ">
+						start with vui.CHR_ID = #{budgetSubjectIncome.chrId} connect by prior vui.CHR_ID = vui.PARENT_ID
+					</if>
+				<choose>
+					<when test="sort !=null and sort != ''">				
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY vui.DISP_CODE ASC
+					</otherwise>
+				</choose>    				
+		  ) vui where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) vui
+		WHERE <![CDATA[ vui.rowno > #{startrow} ]]>
+		
+	</select>
+	
+	<select id="findAllList" resultType="BudgetSubjectIncome" parameterType="BudgetSubjectIncome">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,
+			IS_DELETED,LATEST_OP_USER,LAST_VER,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,RG_CODE,PARENT_ID,CHR_ID1,
+			CHR_ID2,CHR_ID3,CHR_ID4,CHR_ID5,TYPE_ID,SUBITEM_TYPE
+		FROM
+			ELE_BUDGET_SUBJECT_INCOME
+		WHERE
+			IS_DELETED = '0'
+        <if test="setYear != null and setYear != '' ">
+			AND SET_YEAR = #{setYear}
+        </if>
+		<if test="chrId != null and chrId != '' ">
+			AND CHR_ID=#{chrId}
+		</if>
+		<if test="parentId != null and parentId != '' ">
+			AND PARENT_ID=#{parentId}
+		</if>
+		ORDER BY DISP_CODE ASC
+	</select>
+
+	<select id="getBudgetSubjectIncomeListByChrId" resultType="BudgetSubjectIncome" parameterType="BudgetSubjectIncome">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,
+			IS_DELETED,LATEST_OP_USER,LAST_VER,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,RG_CODE,PARENT_ID,CHR_ID1,
+			CHR_ID2,CHR_ID3,CHR_ID4,CHR_ID5,TYPE_ID,SUBITEM_TYPE
+		FROM
+			ELE_BUDGET_SUBJECT_INCOME
+		WHERE
+			IS_DELETED = '0'
+			start with CHR_ID = #{chrId} connect by prior CHR_ID = PARENT_ID
+			ORDER BY CHR_CODE ASC
+	</select>
+
+</mapper>

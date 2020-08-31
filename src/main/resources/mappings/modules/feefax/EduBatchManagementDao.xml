@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.EduBatchManagementDao">
+	<select id="get" resultType="EduBatchManagement" parameterType="String">
+		SELECT
+			CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,BEGINTIME,ENDTIME,BATCHID,ENABLE,RG_CODE,IS_DELETED
+		FROM
+			UNTAX_EDU_BATCH
+		WHERE
+			IS_DELETED = 0 AND ENABLE = 1
+	</select>
+
+	<select id="checkBatchIsUsed" resultType="long" parameterType="EduBatchManagement">
+		SELECT
+			COUNT(CHR_ID) as total
+		FROM
+			UNTAX_EDU_COLLECTION
+		WHERE
+			BATCHID = #{chrId} AND IS_DELETED = 0
+	</select>
+	
+	<insert id="insert" parameterType="EduBatchManagement" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT EDUBATCH_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+				UNTAX_EDU_BATCH(CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,BEGINTIME,ENDTIME,BATCHID,ENABLE,RG_CODE
+				)
+		VALUES
+			(#{chrId,jdbcType=VARCHAR},#{createDate,jdbcType=VARCHAR},#{createUser,jdbcType=VARCHAR},#{latestOpDate,jdbcType=VARCHAR},#{begintime,jdbcType=VARCHAR},#{endtime,jdbcType=VARCHAR},#{batchid,jdbcType=VARCHAR},#{enable,jdbcType=VARCHAR},#{rgCode,jdbcType=VARCHAR})
+	</insert> 
+	
+	<delete id="deleteBatchDo" parameterType="EduBatchManagement" >
+		UPDATE
+			UNTAX_EDU_BATCH
+		SET
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete>
+
+	<update id="updateEnable" parameterType="EduBatchManagement">
+		UPDATE
+			UNTAX_EDU_BATCH
+		SET
+			ENABLE = 0
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+
+
+
+	<update id="update" parameterType="EduBatchManagement">
+		UPDATE
+			UNTAX_EDU_BATCH
+		SET
+			CREATE_DATE=#{createDate,jdbcType=VARCHAR},CREATE_USER=#{createUser,jdbcType=VARCHAR},LATEST_OP_DATE=#{latestOpDate,jdbcType=VARCHAR},BEGINTIME=#{begintime,jdbcType=VARCHAR},ENDTIME=#{endtime,jdbcType=VARCHAR},BATCHID=#{batchid,jdbcType=VARCHAR},
+			RG_CODE=#{rgCode,jdbcType=VARCHAR}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="editEnableStatus" parameterType="EduBatchManagement">
+		UPDATE
+			UNTAX_EDU_BATCH
+		SET
+			ENABLE = 1
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<select id="getEduBatchManagementListTotal" resultType="long" parameterType="EduBatchManagement">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_EDU_BATCH
+		WHERE
+			IS_DELETED = 0
+		<if test="begintime != null and begintime != ''">
+			AND BEGINTIME >= #{begintime}
+		</if>
+		<if test="endtime != null and endtime != ''">
+			AND ENDTIME &lt;= #{endtime}
+		</if>
+
+	</select>
+
+	<select id="checkEnableStatus" resultType="EduBatchManagement" parameterType="java.util.HashMap">
+		SELECT
+			CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,BEGINTIME,ENDTIME,
+			BATCHID,ENABLE,RG_CODE,IS_DELETED
+		FROM
+			UNTAX_EDU_BATCH
+		WHERE
+			IS_DELETED = 0
+			AND ENABLE = 1
+			AND ENDTIME &lt; #{eduBatchManagement.latestOpDate}
+	</select>
+
+
+	<select id="getEduBatchManagement" resultType="EduBatchManagement" parameterType="java.util.HashMap">
+		SELECT
+			CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,BEGINTIME,ENDTIME,
+			BATCHID,ENABLE,RG_CODE,IS_DELETED
+		FROM
+			UNTAX_EDU_BATCH
+		WHERE
+			IS_DELETED = 0 AND ENABLE = 1
+		ORDER BY CHR_ID DESC
+	</select>
+
+	<select id="getEduBatchManagementListByCondition" resultType="EduBatchManagement" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ueb.* FROM (
+					SELECT
+						CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,BEGINTIME,ENDTIME,
+						BATCHID,ENABLE,RG_CODE,IS_DELETED
+					FROM
+						UNTAX_EDU_BATCH ueb
+					WHERE
+						IS_DELETED = 0
+					<if test="eduBatchManagement.begintime != null and eduBatchManagement.begintime != ''">
+						AND BEGINTIME >= #{eduBatchManagement.begintime}
+					</if>
+					<if test="eduBatchManagement.endtime != null and eduBatchManagement.endtime != ''">
+						AND ENDTIME &lt;= #{eduBatchManagement.endtime}
+					</if>
+					ORDER BY CHR_ID DESC
+			) ueb where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ueb
+		WHERE <![CDATA[ ueb.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="UntaxNosource" parameterType="UntaxNosource">
+		SELECT
+			CHR_ID,PAYER,PAYERBANK,PAYERACCOUNT,RECEIVERID,RECEIVER,RECEIVERBANK,RECEIVERACCOUNT,EVENTTIME,EVENTADDRESS,
+			PM_ID,CHECKMONEY,REMARK,TALLYTAG,IS_COLLECT,CREATE_USER,CREATE_DATE,BANK_NO,IS_SEND,LAST_VER,RG_CODE,SET_YEAR,
+			IS_END,EN_ID,EN_CODE,EN_NAME,IS_WF,CONFIRM,CHECKEARNE,ERASEFLAG,IS_CLAIM,T_BILL_NO,REMARK1,REMARK2,CONFIRMEND,
+			CHECKEARNEDATE,PAYCODE,PAYTRASEQNO,MEMO,RECACCTTYPE,DEPTRANO,BANKOUTLET,SOURCE_ID,BIND_EN_ID,IS_AUDIT,IS_PAY
+		FROM
+			UNTAX_NOSOURCE
+	</select>
+
+	<update id="editIsClaimDo" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_CLAIM = '1',EN_ID = #{enId},REMARK1 = #{remark1}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="cancelIsClaim" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_CLAIM = '0' , EN_ID = ''
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="changeStateCode" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			STATE_CODE = '005'
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="cancelStateCode" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			STATE_CODE = '002'
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="editIsAuditDo" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_AUDIT = 1, STATE_CODE = '006'
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+	<update id="cancelAudit" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_AUDIT = '0',STATE_CODE = '005'
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<select id="getCollections" resultType="Collections" parameterType="java.util.HashMap">
+		SELECT
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, eu.* FROM (
+				SELECT
+					uc.CHR_ID as chrId,uc.BILL_NO as billNo,uc.BILLTYPE_ID as billtypeId, ub.CHR_NAME as
+					billName,UC.EN_ID as enId,EIE.CHR_NAME as enName,uc.PAYER as payer,
+					CASE WHEN uc.RECEIVETYPE = 1 THEN( SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTIONDETAIL ucd WHERE ucd.main_id = uc.CHR_ID)
+					ELSE(SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTION_GATHER_DETAIL WHERE main_id IN (SELECT CHR_ID FROM UNTAX_COLLECTION_GATHER WHERE COLLECT_ID = uc.CHR_ID))
+					END chargemoney,uc.PRINTFLAG
+				FROM
+					UNTAX_COLLECTION uc,UNTAX_BILLNAME ub,ELE_INCOME_ENTERPRISE eie
+				WHERE
+					uc.IS_DELETED=0 AND uc.BILLTYPE_ID = ub.CHR_ID AND UC.EN_ID = EIE.CHR_ID AND uc.PRINTFLAG = 1 AND
+					uc.PAYFLAG = 0
+					<if test="collections.billtypeId != null and collections.billtypeId != ''">
+						AND uc.BILLTYPE_ID = #{collections.billtypeId}
+					</if>
+					<if test="collections.billNo != null and collections.billNo != ''">
+						AND uc.BILL_NO = #{collections.billNo}
+					</if>
+					<if test="collections.payer != null and collections.payer != ''">
+						AND uc.PAYER = #{collections.payer}
+					</if>
+					<if test="collections.receiverid != null and collections.receiverid != ''">
+						AND uc.RECEIVERID = #{collections.receiverid}
+					</if>
+					<if test="collections.enId != null and collections.enId != ''">
+						AND uc.EN_ID = #{collections.enId}
+					</if>
+					AND INSTR(uc.NOSOURCE_IDS,#{collections.chrId}) IS NULL
+					ORDER BY uc.CREATE_DATE DESC
+			) eu where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) eu
+		WHERE <![CDATA[ eu.rowno > #{startrow} ]]>
+	</select>
+
+	<select id="getCollectionsListTotal" resultType="long" parameterType="Collections">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_COLLECTION
+		WHERE
+			IS_DELETED = 0 AND PRINTFLAG = 1 AND PAYFLAG = 0
+		<if test="billtypeId != null and billtypeId != ''">
+			AND BILLTYPE_ID = #{billtypeId}
+		</if>
+		<if test="billNo != null and billNo != ''">
+			AND BILL_NO = #{billNo}
+		</if>
+		<if test="payer != null and payer != ''">
+			AND PAYER = #{payer}
+		</if>
+		<if test="receiverid != null and receiverid != ''">
+			AND RECEIVERID = #{receiverid}
+		</if>
+		<if test="enId != null and enId != ''">
+			AND EN_ID = #{enId}
+		</if>
+		AND INSTR(NOSOURCE_IDS,#{chrId}) IS NULL
+	</select>
+
+	<select id="checkIsRepeat" resultType="long" parameterType="UntaxNosourceCollection">
+		SELECT
+			COUNT(NOSOURCE_ID) AS num
+		FROM
+			UNTAX_NOSOURCE_COLLECTION
+		WHERE
+			NOSOURCE_ID = #{nosourceId} AND COLLECTION_ID = #{collectionId}
+	</select>
+
+	<update id="bindingIsCollect" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			NOSOURCE_IDS = #{nosourceIds}
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+
+	<update id="bindingIsCollectInNosource" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_COLLECT = 1
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+
+	<update id="bindingNosourceInCollection" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			NOSOURCE_IDS = #{nosourceIds}
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+
+	<select id="getUserNamebyId" resultType="String" parameterType="String">
+		SELECT
+			USER_NAME
+		FROM
+			SYS_USERMANAGE
+		WHERE
+			USER_ID = #{userId}
+	</select>
+
+	<!-- 清除状态位	-->
+	<update id="recallIsCollectInNosource" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_COLLECT = 0
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+	<!-- 清除collections中的绑定关系	-->
+	<update id="recallCollectionIds" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			NOSOURCE_IDS = ''
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+
+	<!-- 清除nosourcecollections中的绑定关系	-->
+	<delete id="recallNosourceIds" parameterType="UntaxNosource">
+		DELETE FROM
+			UNTAX_NOSOURCE_COLLECTION
+		WHERE
+			NOSOURCE_ID = #{chrId}
+	</delete>
+
+	<!-- 将关联关系重新写入-->
+	<update id="updateNosourceIds" parameterType="Collections">
+		UPDATE UNTAX_COLLECTION
+
+		SET
+			 NOSOURCE_IDS = (SELECT wm_concat(NOSOURCE_ID) FROM UNTAX_NOSOURCE_COLLECTION WHERE COLLECTION_ID = #{chrId}
+								GROUP BY COLLECTION_ID)
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+
+
+
+
+</mapper>

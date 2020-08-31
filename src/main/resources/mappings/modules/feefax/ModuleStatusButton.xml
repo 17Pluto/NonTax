@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.ModuleStatusButtonDao">
+	<insert id="insert" parameterType="ModuleStatusButton" >
+		INSERT INTO
+			SYS_MODULE_STATUS_BUTTON(MODULE_ID,STATUS_ID,BUTTON_ID,LAST_VER)
+		VALUES
+			(#{moduleId},#{statusId},#{buttonId},#{lastVer})
+	</insert>
+
+	<delete id="delete" parameterType="ModuleStatusButton">
+		DELETE FROM
+			SYS_MODULE_STATUS_BUTTON
+		<where>
+			<if test="statusId != null and statusId != '' ">
+				AND STATUS_ID=#{statusId}
+			</if>
+			<if test="buttonId != null and buttonId != '' ">
+				AND BUTTON_ID=#{buttonId}
+			</if>
+				AND MODULE_ID=#{moduleId}
+		</where>
+	</delete>
+
+
+	<select id="findAllList" resultType="ModuleStatusButton" parameterType="ModuleStatusButton">
+		SELECT
+			smsb.STATUS_ID as statusId,smsb.BUTTON_ID as buttonId, sb.ACTION_ID as actionId
+		FROM
+			SYS_MODULE_STATUS_BUTTON smsb, SYS_BUTTON sb
+		WHERE
+			smsb.MODULE_ID=#{moduleId} and smsb.BUTTON_ID = sb.BUTTON_ID
+		ORDER BY smsb.STATUS_ID ASC
+	</select>
+</mapper>

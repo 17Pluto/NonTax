@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.ActionDao">
+	<select id="get" resultType="Action" parameterType="Action">
+		SELECT
+			ACTION_ID,ACTION_CODE,ACTION_NAME,ENABLED,ACTION_TYPE,LAST_VER,SYS_ID,PARENT_ACTION_ID
+		FROM 
+			SYS_ACTION
+		WHERE
+			ACTION_ID=#{actionId}
+	</select>
+	
+	<select id="findAllList" resultType="Action" parameterType="Action">
+		SELECT
+			sa.ACTION_ID as actionId,sa.ACTION_CODE as actionCode,sa.ACTION_NAME as actionName,sa.ENABLED as enabled,
+			sa.ACTION_TYPE as actionType,sa.LAST_VER as lastVer,sa.SYS_ID as sysId,sa.PARENT_ACTION_ID as parentActionId
+		FROM
+			SYS_ACTION sa
+		ORDER BY sa.ACTION_ID ASC
+	</select>
+
+	<insert id="insert" parameterType="Action" >
+		<selectKey resultType="String" order="BEFORE" keyProperty="actionId">
+			SELECT ACTION_S.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO
+			SYS_ACTION(ACTION_ID,ACTION_CODE,ACTION_NAME,ENABLED,ACTION_TYPE,LAST_VER,SYS_ID,PARENT_ACTION_ID)
+		VALUES
+			(#{actionId},#{actionCode},#{actionName},#{enabled},#{actionType},#{lastVer},
+				#{sysId},#{parentActionId})
+	</insert>
+</mapper>

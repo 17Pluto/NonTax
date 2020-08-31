@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.EduImportStuInfoDao">
+	<select id="get" resultType="EduImportStuInfo" parameterType="String">
+		SELECT
+			IS_DELETED,CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,REMARK,LATEST_OP_USER,RG_CODE,STU_NAME,
+			STU_ID,STU_SEX,STU_IDENTITY,STU_INSERTTIME,STU_GRADE,STU_CLASS,STU_INCOMEMONEY,STU_INCOMEITEM,
+			BATCHID,IS_COLLECTION,IS_PRINT,BATCHNAME,STU_DEGREE,BILL_NO,PAYFLAG,RECEIVERID
+		FROM
+			UNTAX_EDU_COLLECTION
+		WHERE
+			IS_DELETED = 0
+			<if test="stuId != null and stuId != '' ">
+				AND STU_ID = #{stuId}
+			</if>
+			<if test="batchid != null and batchid != '' ">
+				AND BATCHID=#{batchid}
+			</if>
+	</select>	
+	
+	<insert id="insert" parameterType="EduImportStuInfo" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT EDUCOLLECTION_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+				UNTAX_EDU_COLLECTION(CHR_ID,REMARK,STU_NAME,STU_ID,STU_SEX,STU_IDENTITY,STU_GRADE,STU_CLASS,BATCHID,STU_INSERTTIME,EN_ID,PM_ID,BILLTYPE_ID,RECEIVERID,BILL_NO,STU_DEGREE,CREATE_DATE,CREATE_USER,RECEIVER,RECEIVERACCOUNT,RECEIVERBANK
+				)
+		VALUES
+			(
+			#{chrId,jdbcType=VARCHAR},#{remark,jdbcType=VARCHAR},#{stuName,jdbcType=VARCHAR},#{stuId,jdbcType=VARCHAR},#{stuSex,jdbcType=VARCHAR},#{stuIdentity,jdbcType=VARCHAR},#{stuGrade,jdbcType=VARCHAR},
+			#{stuClass,jdbcType=VARCHAR},#{batchid,jdbcType=VARCHAR},#{stuInserttime,jdbcType=VARCHAR},#{enId,jdbcType=VARCHAR},#{pmId,jdbcType=VARCHAR},#{billtypeId,jdbcType=VARCHAR},#{receiverid,jdbcType=VARCHAR},
+			#{billNo,jdbcType=VARCHAR},#{stuDegree,jdbcType=VARCHAR},#{createDate,jdbcType=VARCHAR},#{createUser,jdbcType=VARCHAR},#{receiver,jdbcType=VARCHAR},#{receiveraccount,jdbcType=VARCHAR},#{receiverbank,jdbcType=VARCHAR}
+			)
+	</insert> 
+	
+	<delete id="delete" parameterType="EduImportStuInfo" >
+		UPDATE
+			UNTAX_EDU_COLLECTION
+		SET
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete>
+	
+	<update id="update" parameterType="EduImportStuInfo">
+		UPDATE
+			UNTAX_EDU_COLLECTION
+		SET
+			REMARK=#{remark,jdbcType=VARCHAR},STU_NAME=#{stuName,jdbcType=VARCHAR},STU_ID=#{stuId},STU_SEX=#{stuSex},STU_IDENTITY=#{stuIdentity,jdbcType=VARCHAR},STU_INSERTTIME=#{stuInserttime,jdbcType=VARCHAR},STU_GRADE=#{stuGrade,jdbcType=VARCHAR},STU_CLASS=#{stuClass},
+			BATCHID=#{batchid,jdbcType=VARCHAR},EN_ID=#{enId},PM_ID=#{pmId},BILLTYPE_ID=#{billtypeId},RECEIVERID=#{receiverid},LATEST_OP_DATE=#{latestOpDate,jdbcType=VARCHAR},LATEST_OP_USER=#{latestOpUser,jdbcType=VARCHAR}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<select id="getEduStuInfoListTotal" resultType="long" parameterType="EduImportStuInfo">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_EDU_COLLECTION
+		WHERE
+			IS_DELETED = 0
+		<if test="stateCode == '901'">
+			AND IS_COLLECTION = 0
+		</if>
+		<if test="stateCode == '902'">
+			AND IS_COLLECTION = 1
+		</if>
+		<if test="batchid != '' and batchid != null">
+			AND BATCHID LIKE CONCAT(CONCAT('%',#{batchid}),'%')
+		</if>
+
+		<if test="stuId != '' and stuId != null">
+			AND STU_ID LIKE CONCAT(CONCAT('%',#{stuId}),'%')
+		</if>
+
+		<if test="stuName != '' and stuName != null">
+			AND STU_NAME LIKE CONCAT(CONCAT('%',#{stuName}),'%')
+		</if>
+
+		<if test="stuGrade != '' and stuGrade != null">
+			AND STU_GRADE LIKE CONCAT(CONCAT('%',#{stuGrade}),'%')
+		</if>
+
+		<if test="stuClass != '' and stuClass != null">
+			AND STU_CLASS LIKE CONCAT(CONCAT('%',#{stuClass}),'%')
+		</if>
+		<if test="stateCode == '903'">
+			AND IS_COLLECTION = 1 AND PAYFLAG = 1 AND ISEXCHANGE = 0
+		</if>
+	</select>
+
+	<select id="getEduStuInfoListByCondition" resultType="EduImportStuInfo" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, uec.* FROM (
+				SELECT
+					uec.CHR_ID as chrId,uec.IS_DELETED ,uec.REMARK as remark,uec.RG_CODE as rgCode,uec.STU_NAME as stuName
+					,uec.STU_ID as stuId,uec.STU_SEX as stuSex,uec.STU_IDENTITY as stuIdentity,uec.STU_INSERTTIME as
+					stuInserttime,uec.STU_GRADE as stuGrade,uec.STU_CLASS as stuClass,ueb.BATCHID as
+					batchid,uec.EN_ID as enId, uec.BILLTYPE_ID as billtypeId,uc.REQ_BILL_NO as reqBillNo,
+					uec.BILL_NO as billNo
+				FROM
+					UNTAX_EDU_COLLECTION uec , UNTAX_EDU_BATCH ueb, UNTAX_COLLECTION uc
+				WHERE
+						uec.IS_DELETED = 0
+						AND uec.EN_ID = #{EduImportStuInfo.enId}
+						AND uec.CHR_ID = uc.CHR_CODE4(+)
+					<if test="EduImportStuInfo.stateCode == '901'">
+						AND uec.IS_COLLECTION = 0
+					</if>
+						AND uec.BATCHID = ueb.CHR_ID
+					<if test="EduImportStuInfo.stateCode == '902'">
+						AND uec.IS_COLLECTION = 1
+					</if>
+					<if test="EduImportStuInfo.stateCode == '903'">
+						AND uec.IS_COLLECTION = 1  AND uec.PAYFLAG = 1 AND uec.ISEXCHANGE = 0
+					</if>
+					<if test="EduImportStuInfo.stateCode == '904'">
+						AND uec.IS_COLLECTION = 1
+					</if>
+					<if test="EduImportStuInfo.stateCode == '905'">
+						AND uec.IS_COLLECTION = 1  AND uec.PAYFLAG = 1 AND
+						uec.ISEXCHANGE = 1
+					</if>
+					<if test="EduImportStuInfo.stateCode == '103'">
+						AND uec.IS_COLLECTION = 1  AND uec.PAYFLAG = 1 AND
+						uec.ISEXCHANGE = 1 AND uec.CHECKEARNE = 1
+					</if>
+					<if test="EduImportStuInfo.batchid != '' and EduImportStuInfo.batchid != null">
+						AND uec.BATCHID LIKE CONCAT(CONCAT('%',#{EduImportStuInfo.batchid}),'%')
+					</if>
+
+					<if test="EduImportStuInfo.stuId != '' and EduImportStuInfo.stuId != null">
+						AND uec.STU_ID LIKE CONCAT(CONCAT('%',#{EduImportStuInfo.stuId}),'%')
+					</if>
+
+					<if test="EduImportStuInfo.stuName != '' and EduImportStuInfo.stuName != null">
+						AND uec.STU_NAME LIKE CONCAT(CONCAT('%',#{EduImportStuInfo.stuName}),'%')
+					</if>
+
+					<if test="EduImportStuInfo.stuGrade != '' and EduImportStuInfo.stuGrade != null">
+						AND uec.STU_GRADE LIKE CONCAT(CONCAT('%',#{EduImportStuInfo.stuGrade}),'%')
+					</if>
+
+					<if test="EduImportStuInfo.stuClass != '' and EduImportStuInfo.stuClass != null">
+						AND uec.STU_CLASS LIKE CONCAT(CONCAT('%',#{EduImportStuInfo.stuClass}),'%')
+					</if>
+					<choose>
+						<when test="sort !=null and sort != ''">
+							ORDER BY ${sort} ${order}
+						</when>
+						<otherwise>
+							ORDER BY uec.CHR_ID DESC
+						</otherwise>
+					</choose>
+
+			) uec where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) uec
+		WHERE <![CDATA[ uec.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="getEduStuInfoListByConditionForExport" resultType="EduImportStuInfo" parameterType="java.util.HashMap">
+		SELECT
+			uec.CHR_ID as chrId,uec.IS_DELETED ,uec.REMARK as remark,uec.RG_CODE as rgCode,uec.STU_NAME as stuName
+			,uec.STU_ID as stuId,uec.STU_SEX as stuSex,uec.STU_IDENTITY as stuIdentity,uec.STU_INSERTTIME as
+			stuInserttime,uec.STU_GRADE as stuGrade,uec.STU_CLASS as stuClass,ueb.BATCHID as batchid ,uec.EN_ID as
+		enId, uec.BILLTYPE_ID as billtypeId
+			<if test="EduImportStuInfo.stateCode == '902'">
+				,uc.REQ_BILL_NO as reqBillNo
+			</if>
+		FROM
+			UNTAX_EDU_COLLECTION uec , UNTAX_EDU_BATCH ueb
+			<if test="EduImportStuInfo.stateCode == '902'">
+				, UNTAX_COLLECTION uc
+			</if>
+		WHERE
+			uec.IS_DELETED = 0
+			AND uec.BATCHID = #{EduImportStuInfo.batchid}
+			AND uec.EN_ID = #{EduImportStuInfo.enId}
+			<if test="EduImportStuInfo.stuGrade != '' and EduImportStuInfo.stuGrade != null">
+			AND uec.STU_GRADE = #{EduImportStuInfo.stuGrade}
+			</if>
+			<if test="EduImportStuInfo.stuClass != '' and EduImportStuInfo.stuClass != null">
+				AND uec.STU_CLASS =#{EduImportStuInfo.stuClass}
+			</if>
+			<if test="EduImportStuInfo.stateCode == '901'">
+			AND uec.IS_COLLECTION = 0
+			</if>
+			AND uec.BATCHID = ueb.CHR_ID
+			<if test="EduImportStuInfo.stateCode == '902'">
+			AND uec.IS_COLLECTION = 1 AND uc.CHR_CODE4 = uec.CHR_ID
+			</if>
+
+		<choose>
+			<when test="sort !=null and sort != ''">
+				ORDER BY ${sort} ${order}
+			</when>
+			<otherwise>
+				ORDER BY uec.STU_GRADE DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllGrade" resultType="EduImportStuInfo" parameterType="String">
+		SELECT
+	    	DISTINCT STU_GRADE
+		FROM
+			UNTAX_EDU_COLLECTION
+		WHERE
+	    	IS_DELETED = 0 AND IS_COLLECTION = 1 AND EN_ID = #{enId}
+	    ORDER BY STU_GRADE DESC
+	</select>
+
+	<select id="findAllClass" resultType="EduImportStuInfo" parameterType="String">
+		SELECT
+	    	DISTINCT STU_ClASS
+		FROM
+			UNTAX_EDU_COLLECTION
+		WHERE
+	    	IS_DELETED = 0 AND IS_COLLECTION = 1 AND STU_GRADE = #{stuGrade} AND EN_ID = #{enId} AND BATCHID =
+	    	#{batchid}
+	</select>
+
+	<select id="getEduStuInfoByChrId" resultType="EduImportStuInfo" parameterType="String">
+		SELECT
+				uec.CHR_ID,uec.IS_DELETED,uec.REMARK,uec.RG_CODE,uec.STU_NAME,uec.STU_ID,uec.STU_SEX,uec.STU_IDENTITY,uec.STU_INSERTTIME,uec.STU_GRADE,uec.STU_CLASS,uec.BATCHID,uec.EN_ID,uec.PM_ID,uec.BILLTYPE_ID,uec.RECEIVERID,uec.RECEIVER,uec.RECEIVERACCOUNT,uec.RECEIVERBANK,uc.REQ_BILL_NO
+		FROM
+				UNTAX_EDU_COLLECTION uec , UNTAX_COLLECTION uc
+		WHERE
+				uec.IS_DELETED = 0  AND uec.CHR_ID = #{chrId} AND uec.CHR_ID = uc.CHR_CODE4(+)
+	</select>
+
+	<select id="findAllList" resultType="UntaxNosource" parameterType="UntaxNosource">
+		SELECT
+			CHR_ID,PAYER,PAYERBANK,PAYERACCOUNT,RECEIVERID,RECEIVER,RECEIVERBANK,RECEIVERACCOUNT,EVENTTIME,EVENTADDRESS,
+			PM_ID,CHECKMONEY,REMARK,TALLYTAG,IS_COLLECT,CREATE_USER,CREATE_DATE,BANK_NO,IS_SEND,LAST_VER,RG_CODE,SET_YEAR,
+			IS_END,EN_ID,EN_CODE,EN_NAME,IS_WF,CONFIRM,CHECKEARNE,ERASEFLAG,IS_CLAIM,T_BILL_NO,REMARK1,REMARK2,CONFIRMEND,
+			CHECKEARNEDATE,PAYCODE,PAYTRASEQNO,MEMO,RECACCTTYPE,DEPTRANO,BANKOUTLET,SOURCE_ID,BIND_EN_ID,IS_AUDIT,IS_PAY
+		FROM
+			UNTAX_NOSOURCE
+	</select>
+
+	<update id="updateIsCollection" parameterType="String">
+		UPDATE
+			UNTAX_EDU_COLLECTION
+		SET
+			IS_COLLECTION = 1 , REQ_BILL_NO = #{reqBillNo}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="updateStuInfoBillNo" parameterType="EduImportStuInfo">
+		UPDATE
+			UNTAX_EDU_COLLECTION
+		SET
+			BILL_NO = #{billNo},ISEXCHANGE = 1
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="updateCollectionsBillNo" parameterType="EduImportStuInfo">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			BILL_NO = #{billNo}
+		WHERE
+			CHR_CODE4=#{chrId}
+	</update>
+
+	<update id="updateStuPayflag" parameterType="String">
+		UPDATE
+			UNTAX_EDU_COLLECTION
+		SET
+			PAYFLAG = 1
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+</mapper>

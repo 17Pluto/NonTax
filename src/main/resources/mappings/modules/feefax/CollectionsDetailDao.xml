@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.CollectionsDetailDao">
+	<select id="get" resultType="CollectionsDetail" parameterType="String">
+		SELECT
+			CHR_ID,MAIN_ID,INCITEMID,MEASURE,CHARGENUM,CHARGESTANDARD,CHARGEMONEY,UNITITEM_ID,ITEM_CHKCODE,CHECK_FLAG,LAST_VER,
+			PAYBILL_ID,IS_PAY,ONE_PRICE,TAX_NO
+		FROM
+			UNTAX_COLLECTIONDETAIL
+		WHERE
+			IS_DELETED=0
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+	</select>	
+	
+	<insert id="insert" parameterType="CollectionsDetail" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT COLLECTIONDETAIL_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_COLLECTIONDETAIL(
+				CHR_ID,MAIN_ID,INCITEMID,MEASURE,CHARGENUM,CHARGESTANDARD,CHARGEMONEY,UNITITEM_ID,LAST_VER,TAX_NO,ONE_PRICE
+			)
+		VALUES
+			(#{chrId},#{mainId},#{incitemid},#{measure,jdbcType=VARCHAR},#{chargenum},#{chargestandard,jdbcType=VARCHAR},#{chargemoney},#{unititemId},
+			#{lastVer},#{taxNo,jdbcType=VARCHAR},#{onePrice,jdbcType=VARCHAR}
+			)
+	</insert> 
+	
+	<delete id="delete" parameterType="CollectionsDetail" >
+		DELETE FROM
+			UNTAX_COLLECTIONDETAIL
+		WHERE
+			MAIN_ID=#{mainId}
+	</delete>
+	
+	<update id="update" parameterType="CollectionsDetail">
+		UPDATE
+			UNTAX_COLLECTIONDETAIL
+		SET
+			CHR_ID=#{chrId},MAIN_ID=#{mainId},INCITEMID=#{incitemid},MEASURE=#{measure},CHARGENUM=#{chargenum},CHARGESTANDARD=#{chargestandard},CHARGEMONEY=#{chargemoney},UNITITEM_ID=#{unititemId},
+			ITEM_CHKCODE=#{itemChkcode},CHECK_FLAG=#{checkFlag},LAST_VER=#{lastVer},PAYBILL_ID=#{paybillId},IS_PAY=#{isPay},ONE_PRICE=#{onePrice,jdbcType=VARCHAR}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+
+	<update id="updateIncitemName" parameterType="CollectionsDetail">
+		UPDATE
+			UNTAX_COLLECTIONDETAIL
+		SET
+			INCITEM_NAME=#{incitemName}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+
+		
+	<select id="getCollectionDetailListTotal" resultType="long" parameterType="CollectionsDetail">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_COLLECTIONDETAIL
+		WHERE
+			IS_DELETED = '0'
+	</select>
+	
+	<select id="getCollectionsDetailListByCondition" resultType="CollectionsDetail"
+			parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ub.* FROM (
+				SELECT
+					CHR_ID,MAIN_ID,INCITEMID,MEASURE,CHARGENUM,CHARGESTANDARD,CHARGEMONEY,UNITITEM_ID,ITEM_CHKCODE,CHECK_FLAG,LAST_VER,
+					PAYBILL_ID,IS_PAY,ONE_PRICE
+				FROM
+					UNTAX_COLLECTIONDETAIL ub
+				WHERE
+					IS_DELETED=0
+		  ) ub where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ub
+		WHERE <![CDATA[ ub.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="CollectionsDetail" parameterType="CollectionsDetail">
+		SELECT
+			uc.CHR_ID as chrId,UC.MAIN_ID as mainId,UC.INCITEMID as incitemid,UC.MEASURE as measure,UC.CHARGENUM as chargenum,
+			UC.CHARGESTANDARD as chargestandard,UC.CHARGEMONEY as chargemoney,UC.UNITITEM_ID as unititemId,
+			eii.CHR_CODE as incitemCode, uc.TAX_NO as taxNo, uc.ONE_PRICE as onePrice,
+			CASE WHEN uc.INCITEM_NAME is null then eii.CHR_NAME
+			ELSE uc.INCITEM_NAME END incitemName
+		FROM
+			UNTAX_COLLECTIONDETAIL uc, ELE_INCOME_ITEM eii
+		<where>
+			uc.INCITEMID = EII.CHR_ID
+			<if test="mainId != null and mainId != '' ">
+				AND uc.MAIN_ID=#{mainId}
+			</if>
+		</where>
+	</select>
+
+
+	<!--核收detail-->
+	<select id="findAllListGroupByCollectId" resultType="CollectionsDetail" parameterType="CollectionsDetail">
+		SELECT
+			uc.CHR_ID as chrId,UC.MAIN_ID as mainId,UC.INCITEMID as incitemid,UC.MEASURE as measure,UC.CHARGENUM as chargenum,
+			UC.CHARGESTANDARD as chargestandard,UC.CHARGEMONEY as chargemoney,UC.UNITITEM_ID as unititemId,
+			eii.CHR_NAME as incitemName, eii.CHR_CODE as incitemCode, uc.TAX_NO as taxNo, uc.ONE_PRICE as onePrice
+		FROM
+			UNTAX_COLLECTIONDETAIL uc, ELE_INCOME_ITEM eii
+		<where>
+			uc.INCITEMID = EII.CHR_ID
+			AND uc.MAIN_ID = #{mainId}
+		</where>
+	</select>
+</mapper>

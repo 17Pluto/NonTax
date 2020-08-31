@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.framework.modules.dao.DepartmentDao">
+	<select id="get" resultType="Department" parameterType="String">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,PARENT_ID
+		FROM 
+			ELE_ENTERPRISE
+		WHERE
+			CHR_ID=#{chrId}
+	</select>	
+	
+	<insert id="insert" parameterType="Department" >
+	</insert> 
+	
+	<delete id="delete" parameterType="Department" >
+		UPDATE 
+			ELE_ENTERPRISE
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete> 
+	
+	<update id="update" parameterType="Department">
+		UPDATE 
+			ELE_ENTERPRISE
+		SET 
+			SET_YEAR=#{setYear},CHR_CODE=#{chrCode},DISP_CODE=#{dispCode},CHR_NAME=#{chrName},LEVEL_NUM=#{levelNum},IS_LEAF=#{isLeaf},ENABLED=#{enabled},PARENT_ID=#{parentId}
+		WHERE 
+			CHR_ID=#{chrId}
+	</update>
+	
+	
+		
+	<select id="getDepartmentListTotal" resultType="long" parameterType="Department">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			ELE_ENTERPRISE
+		WHERE
+			IS_DELETED = '0'
+	</select>
+	
+	<select id="getDepartmentListByCondition" resultType="Department" parameterType="java.util.HashMap">
+		SELECT
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, se.* FROM (
+				SELECT
+					se.CHR_ID as chrId,se.CHR_CODE as chrCode,se.DISP_CODE as dispCode,se.CHR_NAME as chrName,se.LEVEL_NUM as levelNum,se.IS_LEAF as isLeaf,
+					se.ENABLED as enabled, se.PARENT_ID as parentId, se.SET_YEAR as setYear
+				FROM
+					ELE_ENTERPRISE se
+    			WHERE
+    				se.IS_DELETED = '0'
+				<choose>
+					<when test="sort !=null and sort != ''">				
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY se.CHR_ID DESC
+					</otherwise>
+				</choose>    				
+		  ) se where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) se
+		WHERE <![CDATA[ se.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findList" resultType="Department" parameterType="Department">
+		SELECT
+			se.CHR_ID as chrId,se.CHR_CODE as chrCode,se.DISP_CODE as dispCode,se.CHR_NAME as chrName,se.LEVEL_NUM as levelNum,se.IS_LEAF as isLeaf,
+			se.ENABLED as enabled, se.PARENT_ID as parentId, se.SET_YEAR as setYear
+		FROM
+			ELE_ENTERPRISE se
+    	WHERE
+    		se.IS_DELETED = '0' AND se.ENABLED='1'
+	</select>
+</mapper>

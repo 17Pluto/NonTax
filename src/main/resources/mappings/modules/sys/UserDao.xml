@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.framework.modules.dao.UserDao">
+	<select id="findList" resultType="User" parameterType="User">
+		SELECT 
+			USER_ID,USER_CODE,USER_NAME,PASSWORD,ORG_TYPE,LEVEL_NUM,GENDER,
+			TELEPHONE,MOBILE,ENABLED,HEADSHIP_CODE,BIRTHDAY,ADDRESS,IS_AUDIT,
+		    NICKNAME,LAST_VER,BELONG_ORG,BELONG_TYPE,SECURITY_LEVEL,INIT_PASSWORD,SET_YEAR,IMSI,IMEI,IS_BLACKLIST,BELONG_ORG_ALL
+		FROM 
+			SYS_USERMANAGE
+	</select>
+
+
+	<select id="findAllList" resultType="User" parameterType="User">
+		SELECT
+			USER_ID,USER_CODE,USER_NAME,PASSWORD,ORG_TYPE,LEVEL_NUM,GENDER,
+			TELEPHONE,MOBILE,ENABLED,HEADSHIP_CODE,BIRTHDAY,ADDRESS,IS_AUDIT,
+			NICKNAME,LAST_VER,BELONG_ORG,BELONG_TYPE,SECURITY_LEVEL,INIT_PASSWORD,SET_YEAR,IMSI,IMEI,IS_BLACKLIST,BELONG_ORG_ALL
+		FROM
+			SYS_USERMANAGE
+		<where>
+			<if test="belongType != null and belongType != '' ">
+				BELONG_TYPE=#{belongType}
+			</if>
+		</where>
+	</select>
+
+	<select id="getBelongOrgList" resultType="User" parameterType="User">
+		SELECT
+			BELONG_ORG
+		FROM
+			SYS_USERMANAGE
+		WHERE
+			BELONG_TYPE=#{belongType} group by BELONG_ORG
+	</select>
+	
+	<select id="findUserInfoByUserNameAndPassword" resultType="User" parameterType="User">
+		SELECT 
+			USER_ID,USER_CODE,USER_NAME
+		FROM 
+			SYS_USERMANAGE
+		WHERE 
+			USER_NAME=#{userName} and PASSWORD=#{password}
+	</select>
+
+
+	<select id="get" resultType="User" parameterType="User">
+		SELECT
+			USER_ID,USER_CODE,USER_NAME,PASSWORD,ORG_TYPE,LEVEL_NUM,GENDER,
+			TELEPHONE,MOBILE,ENABLED,HEADSHIP_CODE,BIRTHDAY,ADDRESS,IS_AUDIT,
+		    NICKNAME,LAST_VER,BELONG_ORG,BELONG_TYPE,SECURITY_LEVEL,INIT_PASSWORD,SET_YEAR,IMSI,IMEI,IS_BLACKLIST,BELONG_ORG_ALL
+		FROM
+			SYS_USERMANAGE
+		<where>
+			<if test="userName != null and userName != '' ">
+				AND USER_NAME=#{userName}
+			</if>
+			<if test="userId != null and userId != '' ">
+				AND USER_ID=#{userId}
+			</if>
+			<if test="userCode != null and userCode != '' ">
+				AND USER_CODE=#{userCode}
+			</if>
+		</where>
+	</select>
+
+
+	<insert id="insert" parameterType="User" >
+		<selectKey resultType="String" order="BEFORE" keyProperty="userId">
+			SELECT USER_S.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO
+			SYS_USERMANAGE(USER_ID,USER_CODE,USER_NAME,PASSWORD,ORG_TYPE,LEVEL_NUM,GENDER,
+				TELEPHONE,MOBILE,ENABLED,HEADSHIP_CODE,BIRTHDAY,ADDRESS,IS_AUDIT,
+		        NICKNAME,LAST_VER,BELONG_ORG,BELONG_TYPE,SECURITY_LEVEL,INIT_PASSWORD,SET_YEAR,IMSI,IMEI,IS_BLACKLIST)
+		VALUES
+			(#{userId},#{userCode},#{userName},#{password},#{orgType},#{levelNum},#{gender,jdbcType=VARCHAR},
+			#{telephone,jdbcType=VARCHAR},#{mobile,jdbcType=VARCHAR},#{enabled},#{headshipCode,jdbcType=VARCHAR},#{birthday,jdbcType=VARCHAR},#{address,jdbcType=VARCHAR},#{isAudit,jdbcType=INTEGER},
+		    #{nickname,jdbcType=VARCHAR},#{lastVer},#{belongOrg},#{belongType},#{securityLevel,jdbcType=INTEGER},
+			#{initPassword,jdbcType=VARCHAR},#{setYear},#{imsi,jdbcType=VARCHAR},#{imei,jdbcType=VARCHAR},#{isBlacklist})
+	</insert>
+
+	<update id="update" parameterType="User" >
+		UPDATE
+			SYS_USERMANAGE
+		SET
+			USER_CODE=#{userCode},USER_NAME=#{userName},
+			<if test="password != null and password != '' ">
+				PASSWORD=#{password},
+			</if>
+			ORG_TYPE=#{orgType},LEVEL_NUM=#{levelNum},GENDER=#{gender,jdbcType=VARCHAR},
+			TELEPHONE=#{telephone,jdbcType=VARCHAR},MOBILE=#{mobile,jdbcType=VARCHAR},ENABLED=#{enabled},HEADSHIP_CODE=#{headshipCode,jdbcType=VARCHAR},BIRTHDAY=#{birthday,jdbcType=VARCHAR},ADDRESS=#{address,jdbcType=VARCHAR},IS_AUDIT=#{isAudit,jdbcType=INTEGER},
+		    NICKNAME=#{nickname,jdbcType=VARCHAR},LAST_VER=#{lastVer},BELONG_ORG=#{belongOrg},BELONG_TYPE=#{belongType},SECURITY_LEVEL=#{securityLevel,jdbcType=INTEGER},INIT_PASSWORD=#{initPassword,jdbcType=VARCHAR},
+		    SET_YEAR=#{setYear},IMSI=#{imsi,jdbcType=VARCHAR},IMEI=#{imei,jdbcType=VARCHAR},IS_BLACKLIST=#{isBlacklist}
+		WHERE
+			USER_ID=#{userId}
+	</update>
+
+	<delete id="delete" parameterType="User" >
+		DELETE FROM
+			SYS_USERMANAGE
+		WHERE
+			USER_ID=#{userId}
+	</delete>
+
+	<update id="editPassword" parameterType="User" >
+		UPDATE
+			SYS_USERMANAGE
+		SET
+			PASSWORD=#{password}
+		WHERE
+			USER_ID=#{userId}
+	</update>
+</mapper>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.OrgtypeDao">
+	<select id="get" resultType="Orgtype" parameterType="String">
+		SELECT
+			ORGTYPE_CODE,ORGTYPE_NAME,ELE_CODE,URL
+		FROM 
+			SYS_ORGTYPE
+	</select>
+	
+	<select id="findAllList" resultType="Orgtype" parameterType="Orgtype">
+		SELECT
+			so.ORGTYPE_CODE as orgtypeCode,so.ORGTYPE_NAME as orgtypeName,so.ELE_CODE as eleCode,so.URL as url
+		FROM
+			SYS_ORGTYPE so
+		ORDER BY so.ORGTYPE_CODE ASC
+	</select>
+</mapper>

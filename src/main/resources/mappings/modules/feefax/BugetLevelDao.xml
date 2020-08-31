@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BugetLevelDao">
+	<select id="get" resultType="BugetLevel" parameterType="String">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,
+			IS_LEAF,ENABLED,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,
+			IS_DELETED,LATEST_OP_USER,LAST_VER,CHR_CODE1,CHR_CODE2,
+			CHR_CODE3,CHR_CODE4,CHR_CODE5,CHR_ID1,CHR_ID2,CHR_ID3,
+			CHR_ID4,CHR_ID5,PARENT_ID,RG_CODE
+		FROM
+			VW_UNTAX_BUDGET_TYPEVALUE
+		WHERE
+			IS_DELETED=0
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+			<if test="chrCode != null and chrCode != '' ">
+				AND CHR_CODE=#{chrCode}
+			</if>
+	</select>	
+	
+	<insert id="insert" parameterType="BugetLevel" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BILLKIND_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			ELE_BILLKIND(SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,
+				IS_LEAF,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,
+				LATEST_OP_USER,LAST_VER,PARENT_ID,RG_CODE,ENABLED,PARENT_NAME)
+		VALUES
+			(#{setYear},#{chrId},#{chrCode},#{dispCode},#{chrName},#{levelNum},
+				#{isLeaf},#{createDate},#{createUser},#{latestOpDate},
+				#{latestOpUser},#{lastVer},#{parentId},#{rgCode},#{enabled},#{parentName})
+	</insert> 
+	
+	<delete id="delete" parameterType="BillKind" >
+		UPDATE 
+			ELE_BILLKIND
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete> 
+	
+	<update id="update" parameterType="BugetLevel">
+		UPDATE 
+			ELE_BILLKIND
+		<set>
+			<if test="setYear != null and setYear != '' ">
+				SET_YEAR=#{setYear},
+			</if>
+			<if test="chrCode != null and chrCode != '' ">
+				CHR_CODE=#{chrCode},
+			</if>
+			<if test="dispCode != null and dispCode != '' ">
+				DISP_CODE=#{dispCode},
+			</if>
+			<if test="chrName != null and chrName != '' ">
+				CHR_NAME=#{chrName},
+			</if>
+			<if test="levelNum != null and levelNum != '' ">
+				LEVEL_NUM=#{levelNum},
+			</if>
+			<if test="parentId != null and parentId != '' ">
+				PARENT_ID=#{parentId},
+			</if>
+			<if test="parentName != null and parentName != '' ">
+				PARENT_NAME=#{parentName},
+			</if>
+			ENABLED=#{enabled},
+		</set>
+		WHERE 
+			CHR_ID=#{chrId}
+	</update>
+	
+	
+		
+	<select id="getBillKindListTotal" resultType="long" parameterType="BillKind">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			ELE_BILLKIND
+		WHERE
+			IS_DELETED = '0'
+        <if test="setYear != null and setYear != '' ">
+            AND SET_YEAR = #{setYear}
+        </if>
+		<if test="chrId != null and chrId != '' ">
+			start with CHR_ID = #{chrId} connect by prior CHR_ID = PARENT_ID
+		</if>
+	</select>
+	
+	<select id="getBillKindListByCondition" resultType="BillKind" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ebk.* FROM (
+				SELECT
+					ebk.CHR_CODE as chrCode,ebk.DISP_CODE as dispCode,ebk.CHR_NAME as chrName,ebk.LEVEL_NUM as levelNum,ebk.ENABLED as enabled,ebk.IS_DELETED as isDeleted,
+					ebk.IS_LEAF as isLeaf, ebk.PARENT_NAME as parentName, ebk.CHR_ID as chrId
+				FROM
+					ELE_BILLKIND ebk
+    			WHERE
+					ebk.IS_DELETED = '0'
+                    <if test="billKind.setYear != null and billKind.setYear != '' ">
+                        AND ebk.SET_YEAR = #{billKind.setYear}
+                    </if>
+		            <if test="billKind.chrId != null and billKind.chrId != '' ">
+						start with ebk.CHR_ID = #{billKind.chrId} connect by prior ebk.CHR_ID = ebk.PARENT_ID
+					</if>
+				<choose>
+					<when test="sort !=null and sort != ''">
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY ebk.DISP_CODE ASC
+					</otherwise>
+				</choose>    				
+		  ) ebk where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ebk
+		WHERE <![CDATA[ ebk.rowno > #{startrow} ]]>
+		
+	</select>
+	
+	<select id="findAllList" resultType="BillKind" parameterType="BillKind">
+		SELECT 
+			ebk.CHR_ID as chrId, ebk.CHR_CODE as chrCode,ebk.DISP_CODE as dispCode,ebk.CHR_NAME as chrName,ebk.LEVEL_NUM as levelNum,ebk.ENABLED as enabled,ebk.IS_DELETED as isDeleted,
+			ebk.IS_LEAF as isLeaf, ebk.PARENT_ID as parentId, ebk.PARENT_NAME as parentName
+		FROM 
+			ELE_BILLKIND ebk
+		WHERE
+			ebk.IS_DELETED = '0'
+        <if test="setYear != null and setYear != '' ">
+			AND ebk.SET_YEAR = #{setYear}
+        </if>
+		<if test="chrId != null and chrId != '' ">
+			AND ebk.CHR_ID=#{chrId}
+		</if>
+		<if test="parentId != null and parentId != '' ">
+			AND ebk.PARENT_ID=#{parentId}
+		</if>
+		ORDER BY ebk.DISP_CODE ASC
+	</select>
+</mapper>

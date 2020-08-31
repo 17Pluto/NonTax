@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.framework.modules.dao.BaseCodeDao">
+	<select id="get" resultType="BaseCode" parameterType="String">
+		SELECT 
+			id,code,name,department_id,class_code
+		FROM 
+			sys_base_code
+		WHERE
+			id=#{id}		
+	</select>	
+
+	<select id="getBaseCodeListByBaseClass" resultType="BaseCode" parameterType="String">
+		SELECT 
+			id,code,name,department_id
+		FROM 
+			sys_base_code
+		WHERE
+			class_code = #{0} and del_flag = '0'
+	</select>
+	
+	<select id="getBaseCodeListByBaseClassAndDepartmentId" resultType="BaseCode" parameterType="BaseCode">
+		SELECT 
+			id,code,name,department_id
+		FROM 
+			sys_base_code
+		WHERE
+			class_code = #{classCode} and del_flag = '0'
+		<if test="departmentId != null and departmentId !=''">			
+			AND department_id = #{departmentId}
+		</if>
+	</select>
+	
+	
+	<insert id="insert" parameterType="BaseCode" >
+		INSERT INTO
+			sys_base_code(id,class_code,code,name,department_id)
+		VALUES
+			(#{id},#{classCode},#{code},#{name},#{departmentId})
+	</insert> 
+	
+	<delete id="delete" parameterType="BaseCode" >
+		UPDATE 
+			sys_base_code 
+		SET 
+			del_flag = '1'
+		WHERE
+			id=#{id}
+	</delete> 
+	
+	<update id="update" parameterType="BaseCode">
+		UPDATE sys_base_code SET code=#{code},name=#{name},department_id=#{departmentId}
+		WHERE 
+			id = #{id}
+	</update>
+	
+	
+		
+	<select id="getBaseCodeListTotal" resultType="long" parameterType="BaseCode">
+		SELECT
+			count(id) as num
+		FROM
+			sys_base_code
+		WHERE
+			del_flag = '0'
+	</select>
+	
+	<select id="getBaseCodeListByCondition" resultType="BaseCode" parameterType="java.util.HashMap">		
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, sbc.* FROM (
+				SELECT 
+					sbc.id as id, sbc.class_code as classCode, sbc.code as code, sbc.name as name, sbc.department_id as departmentId, sbcl.name as baseClassName
+				FROM 
+					sys_base_code sbc
+    			left JOIN 
+    				sys_base_class sbcl ON sbcl.code = sbc.class_code
+    			WHERE
+    				sbc.del_flag = '0'
+				<choose>
+					<when test="sort !=null and sort != ''">				
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY sbc.id DESC
+					</otherwise>
+				</choose>    				
+		  ) sbc where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) sbc
+		WHERE <![CDATA[ sbc.rowno > #{startrow} ]]>		
+		
+	</select>
+</mapper>

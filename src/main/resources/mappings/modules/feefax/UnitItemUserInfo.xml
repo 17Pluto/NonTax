@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.UnitItemUserInfoDao">
+	<select id="get" resultType="UnitItemUserInfo" parameterType="UnitItemUserInfo">
+		SELECT
+			CHR_ID,MAIN_ID,USER_ID,ORDER_NUM,ZS_ADDRESS,REMARK,LAST_VER
+		FROM 
+			UNTAX_UNITITEM_USERINFO
+	</select>
+	
+	<insert id="insert" parameterType="UnitItemUserInfo" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT USERINFO_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+		UNTAX_UNITITEM_USERINFO(CHR_ID,MAIN_ID,USER_ID,ORDER_NUM,ZS_ADDRESS,REMARK,LAST_VER)
+		VALUES
+			(#{chrId},#{mainId},#{userId},#{orderNum},#{zsAddress,jdbcType=VARCHAR},#{remark,jdbcType=VARCHAR},#{lastVer})
+	</insert>
+	
+	<delete id="delete" parameterType="UnitItemUserInfo" >
+		DELETE FROM
+			UNTAX_UNITITEM_USERINFO
+		WHERE
+			MAIN_ID=#{mainId}
+	</delete> 
+	
+	<update id="update" parameterType="UnitItemUserInfo">
+		UPDATE
+			UNTAX_UNITITEM_USERINFO
+		SET
+			CHR_ID=#{chrId},MAIN_ID=#{mainId},USER_ID=#{userId},ORDER_NUM=#{orderNum},ZS_ADDRESS=#{zsAddress},REMARK=#{remark},LAST_VER=#{lastVer}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+	
+	
+		
+	<select id="getUnitItemUserInfoListTotal" resultType="long" parameterType="UnitItemUserInfo">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_UNITITEM_USERINFO
+	</select>
+	
+	<select id="getUnitItemUserInfoListByCondition" resultType="com.xcmis.feefax.modules.entity.UnitItemUserInfo" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, vui.* FROM (
+				SELECT
+					CHR_ID,MAIN_ID,USER_ID,ORDER_NUM,ZS_ADDRESS,REMARK,LAST_VER
+				FROM
+					UNTAX_UNITITEM_USERINFO vui
+		  ) vui where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) vui
+		WHERE <![CDATA[ vui.rowno > #{startrow} ]]>
+	</select>
+
+	<select id="findAllList" resultType="UnitItemUserInfo" parameterType="UnitItemUserInfo">
+		SELECT
+			uuu.CHR_ID,uuu.MAIN_ID,uuu.USER_ID,uuu.ORDER_NUM,uuu.ZS_ADDRESS,uuu.REMARK,uuu.LAST_VER,
+			ru.CHR_NAME as eieChrName,ru.CHR_CODE as ruChrCode
+		FROM
+			UNTAX_UNITITEM_USERINFO uuu,RG_USER ru
+		<where>
+			uuu.USER_ID = ru.CHR_ID
+			<if test="mainId != null and mainId != '' ">
+				AND uuu.MAIN_ID=#{mainId}
+			</if>
+		</where>
+	</select>
+</mapper>

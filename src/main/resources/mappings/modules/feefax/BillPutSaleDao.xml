@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BillPutSaleDao">
+	<select id="get" resultType="BillPutSale" parameterType="String">
+		SELECT
+			SET_YEAR,CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,IS_DELETED,LATEST_OP_USER,RG_CODE,BILLSERIAL_NO,
+			EN_ID,RECEIVER,ORDER_NUM,REMARK,BELONG_ORG,ORG_TYPE,PUTSALE_DATE,RCID,ISEND,COLLECT_ID,
+			IS_SEND,RECEIVETYPE,PRINTFLAG,PRINTDATE,UNTAX_RECEIVEBOOK_ID,AREA_SOURCE,IS_BILL_BACK
+		FROM
+			UNTAX_0_BILLPUTSALE
+		WHERE
+			IS_DELETED=0
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+	</select>	
+	
+	<insert id="insert" parameterType="BillPutSale" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BILLPUTSALE_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_0_BILLPUTSALE(SET_YEAR,CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,IS_DELETED,RG_CODE,BILLSERIAL_NO,
+				EN_ID,REMARK,PUTSALE_DATE,ISEND,IS_SEND,RECEIVETYPE,PRINTFLAG,AREA_SOURCE,IS_BILL_BACK,STATE_CODE
+			)
+		VALUES
+			(#{setYear},#{chrId},#{createDate},#{createUser},#{latestOpDate},#{isDeleted},
+				#{rgCode},#{billserialNo},#{enId},#{remark},#{putsaleDate},
+				#{isend},#{isSend},#{receivetype},#{printflag},#{areaSource},#{isBillBack},#{stateCode}
+			)
+	</insert>
+
+	<delete id="delete" parameterType="BillPutSale" >
+		UPDATE 
+			UNTAX_0_BILLPUTSALE
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete>
+
+
+	<update id="update" parameterType="BillPutSale">
+		UPDATE
+			UNTAX_0_BILLPUTSALE
+		SET
+			LATEST_OP_DATE=#{latestOpDate},EN_ID=#{enId},REMARK=#{remark,jdbcType=VARCHAR},PUTSALE_DATE=#{putsaleDate},
+			ISEND=#{isend},IS_SEND=#{isSend},RECEIVETYPE=#{receivetype}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+		
+	<select id="getBillPutSaleListTotal" resultType="long" parameterType="BillPutSale">
+		SELECT
+			count(ub.CHR_ID) as num
+		FROM
+			UNTAX_0_BILLPUTSALE ub, SYS_USERMANAGE su
+		WHERE
+			ub.IS_DELETED = 0 AND ub.CREATE_USER = su.USER_ID(+)
+		<if test="enId != null and enId != '' ">
+			AND ub.EN_ID = #{enId}
+		</if>
+		<if test="stateCode != null and stateCode != '' and stateCode != '000'">
+			AND ub.STATE_CODE = #{stateCode}
+		</if>
+		<if test="startPutsaleDate != null and startPutsaleDate != '' ">
+			AND ub.PUTSALE_DATE &gt;= #{startPutsaleDate}
+		</if>
+		<if test="endPutsaleDate != null and endPutsaleDate != '' ">
+			AND ub.PUTSALE_DATE &lt;= #{endPutsaleDate}
+		</if>
+		<if test="userName != null and userName != '' ">
+			AND su.USER_NAME like CONCAT(CONCAT('%',#{userName}),'%')
+		</if>
+		<if test="untaxBillnameId != null and untaxBillnameId != '' ">
+			AND ub.CHR_ID in(select main_id from UNTAX_0_BILLPUTSALE_LIST where UNTAX_BILLNAME_ID=#{untaxBillnameId})
+		</if>
+	</select>
+	
+	<select id="getBillPutSaleListByCondition" resultType="BillPutSale" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ub.* FROM (
+				SELECT
+					ub.SET_YEAR as setYear,ub.CHR_ID as chrId,ub.CREATE_DATE as createDate,ub.CREATE_USER as createUser,ub.LATEST_OP_DATE as latestOpDate,ub.IS_DELETED as isdeleted,
+					ub.LATEST_OP_USER as latestOpUser,ub.RG_CODE as rgCode,ub.BILLSERIAL_NO as billserialNo,
+					ub.EN_ID as enId,ub.RECEIVER as receiver,ub.ORDER_NUM as orderNum,ub.REMARK as remark,ub.BELONG_ORG as belongOrg,ub.ORG_TYPE as orgType,ub.PUTSALE_DATE as putsaleDate,ub.RCID as rcid,
+					ub.ISEND as isend,ub.COLLECT_ID as collectId,ub.IS_SEND as isSend,ub.RECEIVETYPE as receivetype,ub.PRINTFLAG as printflag,ub.PRINTDATE as printdate,ub.UNTAX_RECEIVEBOOK_ID as untaxReceivebookId,
+					ub.AREA_SOURCE as areaSource,ub.IS_BILL_BACK as isBillBack,eie.CHR_NAME as enName,
+					su.USER_NAME as userName
+				FROM
+					UNTAX_0_BILLPUTSALE ub,ELE_INCOME_ENTERPRISE eie, SYS_USERMANAGE su
+				WHERE
+					ub.IS_DELETED = 0 AND ub.EN_ID = eie.CHR_ID(+) AND ub.CREATE_USER = su.USER_ID(+)
+				<if test="billPutSale.enId != null and billPutSale.enId != '' ">
+					AND ub.EN_ID = #{billPutSale.enId}
+				</if>
+				<if test="billPutSale.stateCode != null and billPutSale.stateCode != '' and billPutSale.stateCode != '000'">
+					AND ub.STATE_CODE = #{billPutSale.stateCode}
+				</if>
+				<if test="billPutSale.startPutsaleDate != null and billPutSale.startPutsaleDate != '' ">
+					AND ub.PUTSALE_DATE &gt;= #{billPutSale.startPutsaleDate}
+				</if>
+				<if test="billPutSale.endPutsaleDate != null and billPutSale.endPutsaleDate != '' ">
+					AND ub.PUTSALE_DATE &lt;= #{billPutSale.endPutsaleDate}
+				</if>
+				<if test="billPutSale.userName != null and billPutSale.userName != '' ">
+					AND su.USER_NAME like CONCAT(CONCAT('%',#{billPutSale.userName}),'%')
+				</if>
+				<if test="billPutSale.untaxBillnameId != null and billPutSale.untaxBillnameId != '' ">
+					AND ub.CHR_ID in(select main_id from UNTAX_0_BILLPUTSALE_LIST where UNTAX_BILLNAME_ID=#{billPutSale.untaxBillnameId})
+				</if>
+				<choose>
+					<when test="sort !=null and sort != ''">
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY ub.CREATE_DATE desc
+					</otherwise>
+				</choose>
+		) ub where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ub
+		WHERE <![CDATA[ ub.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="BillPutSale" parameterType="BillPutSale">
+		SELECT
+			SET_YEAR,CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,IS_DELETED,LATEST_OP_USER,RG_CODE,BILLSERIAL_NO,
+			EN_ID,RECEIVER,ORDER_NUM,REMARK,BELONG_ORG,ORG_TYPE,PUTSALE_DATE,RCID,ISEND,COLLECT_ID,
+			IS_SEND,RECEIVETYPE,PRINTFLAG,PRINTDATE,UNTAX_RECEIVEBOOK_ID,AREA_SOURCE,IS_BILL_BACK
+		FROM
+			UNTAX_0_BILLPUTSALE
+		WHERE
+			IS_DELETED=0
+	</select>
+
+	<select id="getMaxNo" resultType="String" parameterType="BillPutSale">
+		SELECT
+			max(BILLSERIAL_NO) as billserialNo
+		FROM
+			UNTAX_0_BILLPUTSALE
+		WHERE
+			BILLSERIAL_NO LIKE CONCAT(CONCAT('%',#{billserialNo}),'%')
+	</select>
+
+
+	<update id="checkBillPutSale" parameterType="BillPutSale">
+		UPDATE
+			UNTAX_0_BILLPUTSALE
+		SET
+			ISEND=#{isend},STATE_CODE=#{stateCode}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+</mapper>

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.UnitItemDao">
+	<select id="get" resultType="UnitItem" parameterType="UnitItem">
+		SELECT
+			uui.SET_YEAR,uui.CREATE_USER,uui.CREATE_DATE,uui.LASTEST_OP_USER,uui.LASTEST_OP_DATE,uui.IS_DELETED,
+		    uui.ITEM_ID,uui.IEN_ID,uui.ACCOUNT_BANK,uui.ACCOUNT,uui.BS_ID,uui.MK_ID,uui.BEGIN_TIME,uui.END_TIME,
+		    uui.IN_BS_ID,uui.UPLIMIT,uui.LOWLIMIT,uui.RG_CODE,uui.ENABLED,uui.RCID,uui.ISEND,uui.FEESTANDARDTYPE,uui.LAST_VER,uui.ACCOUNT_ID,
+		    uui.CHARGEKIND_ID,uui.ENABLE_USEDATE,uui.VERIFY_NO,uui.ACCFLAG,uui.IN_AD_ID,uui.FILE_NO,uui.INCODE,uui.IN_ITEMAT_ID,
+			uui.CHR_ID as chrId,eii.CHR_CODE as eiiChrCode,ee.CHR_CODE as eeChrCode,ee.CHR_NAME as eeName,eii.CHR_NAME as eiiChrName,uc.CHR_NAME as chargekindName, ui.CHR_NAME as itemsortName,
+			uui.IEN_ID_ALL as ienIdAll,uui.MK_ID_ALL as mkIdAll,uui.ITEM_ID_ALL as itemIdAll,uui.IN_BS_ID_ALL as inBsIdAll,uui.CHARGE_KIND_ID_ALL as chargekindIdAll,vi.CHR_NAME as accountName
+		FROM
+			UNTAX_UNIT_ITEM uui, ELE_ENTERPRISE ee, ELE_INCOME_ITEM eii, UNTAX_CHARGEKIND uc, UNTAX_ITEMSORT ui,VW_INCOMEBANKACCOUNT vi
+		WHERE
+			uui.IS_DELETED = '0' AND uui.IEN_ID = ee.CHR_ID AND uui.ITEM_ID = eii.CHR_ID AND eii.CHARGEKIND_ID = uc.CHR_ID AND uui.ACCOUNT_ID = vi.CHR_ID(+)
+			AND eii.ITEMSORT_ID = ui.CHR_ID
+			<if test="chrId != null and chrId != '' ">
+				AND uui.CHR_ID=#{chrId}
+			</if>
+	</select>
+	
+	<insert id="insert" parameterType="UnitItem" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT UNITITEM_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_UNIT_ITEM(SET_YEAR,CREATE_USER,CREATE_DATE,LASTEST_OP_USER,LASTEST_OP_DATE,IS_DELETED,ITEM_ID,IEN_ID,ACCOUNT_BANK,ACCOUNT,ACCOUNT_NAME,
+			BS_ID,MK_ID,BEGIN_TIME,END_TIME,IN_BS_ID,UPLIMIT,LOWLIMIT,CHR_ID,RG_CODE,ENABLED,RCID,ISEND,FEESTANDARDTYPE,LAST_VER,ACCOUNT_ID,
+			CHARGEKIND_ID,ENABLE_USEDATE,VERIFY_NO,ACCFLAG,IN_AD_ID,FILE_NO,INCODE,IN_ITEMAT_ID,IEN_ID_ALL,MK_ID_ALL,ITEM_ID_ALL,IN_BS_ID_ALL,CHARGE_KIND_ID_ALL,STATE_CODE)
+		VALUES
+			(#{setYear},#{createUser,jdbcType=VARCHAR},#{createDate,jdbcType=VARCHAR},#{lastestOpUser,jdbcType=VARCHAR},#{lastestOpDate,jdbcType=VARCHAR},#{isDeleted,jdbcType=INTEGER},#{itemId,jdbcType=VARCHAR},#{ienId,jdbcType=VARCHAR},#{accountBank,jdbcType=VARCHAR},#{account,jdbcType=VARCHAR},
+				#{accountName,jdbcType=VARCHAR},#{bsId,jdbcType=VARCHAR},#{mkId,jdbcType=VARCHAR},#{beginTime,jdbcType=VARCHAR},#{endTime,jdbcType=VARCHAR},
+				#{inBsId,jdbcType=VARCHAR},#{uplimit,jdbcType=VARCHAR},#{lowlimit},#{chrId,jdbcType=VARCHAR},
+				#{rgCode,jdbcType=VARCHAR},#{enabled,jdbcType=VARCHAR},#{rcid,jdbcType=VARCHAR},#{isend,jdbcType=DOUBLE},#{feestandardtype,jdbcType=DOUBLE},#{lastVer,jdbcType=VARCHAR},#{accountId,jdbcType=VARCHAR},
+				#{chargekindId,jdbcType=VARCHAR},#{enableUsedate,jdbcType=DOUBLE},#{verifyNo,jdbcType=INTEGER},#{accflag,jdbcType=VARCHAR},#{inAdId,jdbcType=VARCHAR},
+				#{fileNo,jdbcType=VARCHAR},#{incode,jdbcType=VARCHAR},#{inItematId,jdbcType=VARCHAR},#{ienIdAll,jdbcType=VARCHAR},#{mkIdAll,jdbcType=VARCHAR},#{itemIdAll,jdbcType=VARCHAR},#{inBsIdAll,jdbcType=VARCHAR},#{chargekindIdAll,jdbcType=VARCHAR},#{stateCode})
+	</insert> 
+	
+	<delete id="delete" parameterType="UnitItem" >
+		UPDATE 
+			UNTAX_UNIT_ITEM
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete> 
+	
+	<update id="update" parameterType="UnitItem">
+		UPDATE
+			UNTAX_UNIT_ITEM
+		SET
+			LASTEST_OP_USER=#{lastestOpUser,jdbcType=VARCHAR},LASTEST_OP_DATE=#{lastestOpDate,jdbcType=VARCHAR},
+			IS_DELETED=#{isDeleted,jdbcType=INTEGER},ITEM_ID=#{itemId,jdbcType=VARCHAR},IEN_ID=#{ienId,jdbcType=VARCHAR},ACCOUNT_BANK=#{accountBank,jdbcType=VARCHAR},ACCOUNT=#{account,jdbcType=VARCHAR},
+			ACCOUNT_NAME=#{accountName,jdbcType=VARCHAR},BS_ID=#{bsId,jdbcType=VARCHAR},MK_ID=#{mkId,jdbcType=VARCHAR},BEGIN_TIME=#{beginTime,jdbcType=VARCHAR},END_TIME=#{endTime,jdbcType=VARCHAR},
+			IN_BS_ID=#{inBsId,jdbcType=VARCHAR},UPLIMIT=#{uplimit,jdbcType=DOUBLE},LOWLIMIT=#{lowlimit,jdbcType=DOUBLE},RG_CODE=#{rgCode,jdbcType=VARCHAR},ENABLED=#{enabled,jdbcType=VARCHAR},
+			RCID=#{rcid,jdbcType=VARCHAR},ISEND=#{isend,jdbcType=DOUBLE},FEESTANDARDTYPE=#{feestandardtype,jdbcType=DOUBLE},LAST_VER=#{lastVer,jdbcType=VARCHAR},ACCOUNT_ID=#{accountId,jdbcType=VARCHAR},
+			CHARGEKIND_ID=#{chargekindId,jdbcType=VARCHAR},ENABLE_USEDATE=#{enableUsedate,jdbcType=DOUBLE},VERIFY_NO=#{verifyNo,jdbcType=INTEGER},ACCFLAG=#{accflag,jdbcType=VARCHAR},IN_AD_ID=#{inAdId,jdbcType=VARCHAR},
+			FILE_NO=#{fileNo,jdbcType=VARCHAR},INCODE=#{incode,jdbcType=VARCHAR},IN_ITEMAT_ID=#{inItematId,jdbcType=VARCHAR},
+			IEN_ID_ALL=#{ienIdAll,jdbcType=VARCHAR},MK_ID_ALL=#{mkIdAll,jdbcType=VARCHAR},ITEM_ID_ALL=#{itemIdAll,jdbcType=VARCHAR},IN_BS_ID_ALL=#{inBsIdAll,jdbcType=VARCHAR},CHARGE_KIND_ID_ALL=#{chargekindIdAll,jdbcType=VARCHAR}
+		WHERE 
+			CHR_ID=#{chrId}
+	</update>
+	
+	
+		
+	<select id="getUnitItemListTotal" resultType="long" parameterType="UnitItem">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_UNIT_ITEM
+		WHERE
+			IS_DELETED = '0'
+		<if test="stateCode != null and stateCode != '' and stateCode != '000'">
+			AND STATE_CODE = #{stateCode}
+		</if>
+        <if test="isend != null and isend != '' ">
+            AND ISEND = #{isend}
+        </if>
+		<if test="itemId != null and itemId != '' ">
+			AND ITEM_ID = #{itemId}
+		</if>
+		<if test="ienId != null and ienId != '' ">
+			AND IEN_ID = #{ienId}
+		</if>
+		<if test="setYear != null and setYear != '' ">
+			AND SET_YEAR = #{setYear}
+		</if>
+	</select>
+	
+	<select id="getUnitItemListByCondition" resultType="UnitItem" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, uui.* FROM (
+				SELECT
+					uui.CHR_ID as chrId,eii.CHR_CODE as eiiChrCode,EE.CHR_CODE as eeChrCode,ee.CHR_NAME as eeName,eii.CHR_NAME as eiiChrName,uc.CHR_NAME as chargekindName, ui.CHR_NAME as itemsortName
+				FROM
+					UNTAX_UNIT_ITEM uui,ELE_ENTERPRISE ee,ELE_INCOME_ITEM eii, UNTAX_CHARGEKIND uc, UNTAX_ITEMSORT ui
+				WHERE
+					uui.IS_DELETED = '0'
+				AND
+					uui.IEN_ID = ee.CHR_ID
+				AND
+					uui.ITEM_ID = eii.CHR_ID
+				AND
+					eii.CHARGEKIND_ID = uc.CHR_ID
+				AND
+					eii.ITEMSORT_ID = ui.CHR_ID
+				<if test="unitItem.stateCode != null and unitItem.stateCode != '' and unitItem.stateCode != '000'">
+					AND uui.STATE_CODE = #{unitItem.stateCode}
+				</if>
+				<if test="unitItem.isend != null and unitItem.isend != '' ">
+					AND uui.ISEND = #{unitItem.isend}
+				</if>
+				<if test="unitItem.itemId != null and unitItem.itemId != '' ">
+					AND uui.ITEM_ID = #{unitItem.itemId}
+				</if>
+				<if test="unitItem.ienId != null and unitItem.ienId != '' ">
+					AND uui.IEN_ID = #{unitItem.ienId}
+				</if>
+
+				<if test="unitItem.setYear != null and unitItem.setYear != '' ">
+					AND uui.SET_YEAR = #{unitItem.setYear}
+				</if>
+				<choose>
+					<when test="sort !=null and sort != ''">				
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY eeChrCode,eiiChrCode asc
+					</otherwise>
+				</choose>    				
+		  ) uui where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) uui
+		WHERE <![CDATA[ uui.rowno > #{startrow} ]]>
+	</select>
+
+	<select id="getUnitItemListByChrId" resultType="UnitItem" parameterType="UnitItem">
+		SELECT
+			eii.CHR_CODE as chrCode,eii.CHR_NAME as chrName,eii.CHR_ID as chrId,eii.PARENT_ID as parentId
+		FROM
+			ELE_INCOME_ITEM eii
+		WHERE
+			eii.IS_DELETED = '0'
+			start with eii.CHR_ID = #{chrId} connect by prior eii.PARENT_ID = eii.CHR_ID
+	</select>
+	
+	<select id="findAllList" resultType="UnitItem" parameterType="UnitItem">
+		SELECT
+			SET_YEAR,CREATE_USER,CREATE_DATE,LASTEST_OP_USER,LASTEST_OP_DATE,IS_DELETED,
+			ITEM_ID,IEN_ID,ACCOUNT_BANK,ACCOUNT,ACCOUNT_NAME,BS_ID,MK_ID,BEGIN_TIME,END_TIME,
+			IN_BS_ID,UPLIMIT,LOWLIMIT,CHR_ID,RG_CODE,ENABLED,RCID,ISEND,FEESTANDARDTYPE,LAST_VER,ACCOUNT_ID,
+			CHARGEKIND_ID,ENABLE_USEDATE,VERIFY_NO,ACCFLAG,IN_AD_ID,FILE_NO,INCODE,IN_ITEMAT_ID
+		FROM
+			UNTAX_UNIT_ITEM
+		WHERE
+			IS_DELETED = '0'
+        <if test="setYear != null and setYear != '' ">
+			AND SET_YEAR = #{setYear}
+        </if>
+		<if test="chrId != null and chrId != '' ">
+			AND CHR_ID=#{chrId}
+		</if>
+		<if test="parentId != null and parentId != '' ">
+			AND PARENT_ID=#{parentId}
+		</if>
+		<if test="itemId != null and itemId != '' ">
+			AND ITEM_ID=#{itemId}
+		</if>
+		<if test="ienId != null and ienId != '' ">
+			AND IEN_ID=#{ienId}
+		</if>
+	</select>
+
+
+	<select id="getUnitItemByEnIdAndBilltypeIdAndAccountId" resultType="UnitItem" parameterType="UnitItem">
+		SELECT
+			uui.ITEM_ID as itemId, uui.CHR_ID as chrId
+		FROM
+			UNTAX_UNIT_ITEM uui,UNTAX_UNITITEM_BANK uub,VW_UNTAX_RECEIVERACCOUNT vur,ELE_INCOME_ITEM eii
+		WHERE
+			uub.ACCOUNT_ID = vur.CHR_ID and UUI.CHR_ID = uub.MAIN_ID and UUI.CHR_ID in (select uui.CHR_ID from UNTAX_UNIT_ITEM uui,UNTAX_UNITITEM_BILLFORM uubf  where uui.IEN_ID=#{ienId} and uubf.BILLTYPE_ID=#{billtypeId} and UUI.CHR_ID = uubf.MAIN_ID )
+			and uub.ACCOUNT_ID = #{accountId} AND uui.IS_DELETED=0 AND uui.ITEM_ID = eii.CHR_ID AND ((eii.ENABLE_USEDATE = '0' and eii.BEGIN_TIME &gt; #{compareDate} and  eii.END_TIME &lt; #{compareDate}) or (eii.ENABLE_USEDATE = '1')) and eii.STATE_CODE='001' and eii.IS_DELETED=0 and uui.STATE_CODE = '002'
+		GROUP BY
+			uui.ITEM_ID, uui.CHR_ID
+		ORDER BY
+			uui.ITEM_ID desc
+	</select>
+
+
+	<select id="getUnitItemByUnitId" resultType="UnitItem" parameterType="UnitItem">
+		SELECT IEN_ID from UNTAX_UNIT_ITEM where CHR_ID in (
+			SELECT
+				MAIN_ID
+			FROM
+				UNTAX_UNITITEM_ACCREDIT
+			where
+				UNIT_ID = #{unitId})
+		GROUP BY IEN_ID
+	</select>
+
+
+	<update id="checkUnitItem" parameterType="UnitItem">
+		UPDATE
+			UNTAX_UNIT_ITEM
+		SET
+			ISEND=#{isend},STATE_CODE=#{stateCode}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+</mapper>

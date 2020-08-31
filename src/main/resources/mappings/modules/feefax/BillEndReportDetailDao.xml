@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BillEndReportDetailDao">
+	<select id="get" resultType="BillEndReportDetail" parameterType="BillEndReportDetail">
+		SELECT
+			CHR_ID,
+			MAIN_ID,
+			UNTAX_BILLTYPE_ID,
+			BGN_BILL_NO,
+			END_BILL_NO,
+			STORE_NUM,
+			REMARK,
+			IS_DELETED,
+			REPORT_TYPE,
+			MONEY,
+			CHECKED,
+			OCCUR_TIME
+		FROM
+			UNTAX_0_BILLENDREPORT_DETAIL
+		WHERE
+			IS_DELETED=0 AND CHR_ID=#{chrId}
+	</select>	
+	
+	<insert id="insert" parameterType="BillEndReportDetail" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BILLENDREPORTDETAIL_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_0_BILLENDREPORT_DETAIL(CHR_ID,MAIN_ID,UNTAX_BILLTYPE_ID,BGN_BILL_NO,END_BILL_NO,STORE_NUM,REMARK,MONEY,
+				CHECKED,OCCUR_TIME
+			)
+		VALUES
+			(#{chrId},#{mainId},#{untaxBilltypeId},#{bgnBillNo},#{endBillNo},
+				#{storeNum},#{remark,jdbcType=VARCHAR},#{money},#{checked},#{occurtime}
+			)
+	</insert>
+
+	<delete id="delete" parameterType="BillEndReportDetail" >
+		UPDATE 
+			UNTAX_0_BILLENDREPORT_DETAIL
+		SET 
+			IS_DELETED = '1'
+		<where>
+			<if test="chrId != null and chrId != '' ">
+				CHR_ID=#{chrId}
+			</if>
+			<if test="mainId != null and mainId != '' ">
+				AND MAIN_ID = #{mainId}
+			</if>
+		</where>
+	</delete>
+
+
+
+
+	<select id="findAllList" resultType="BillEndReportDetail" parameterType="BillEndReportDetail">
+		SELECT
+			ubd.CHR_ID as chrId,
+			ubd.MAIN_ID as mainId,
+			ubd.UNTAX_BILLTYPE_ID as untaxBilltypeId,
+			ubd.BGN_BILL_NO,
+			ubd.END_BILL_NO,
+			ubd.STORE_NUM,
+			ubd.REMARK,
+			ubd.IS_DELETED,
+			ubd.REPORT_TYPE,
+			ubd.MONEY,
+			ubd.CHECKED as checked,
+			ubd.OCCUR_TIME as occurtime,
+			ub.CHR_NAME as untaxBillname
+		FROM
+			UNTAX_0_BILLENDREPORT_DETAIL ubd,UNTAX_BILLNAME ub
+		WHERE
+			ubd.IS_DELETED=0 AND ubd.MAIN_ID=#{mainId} and ubd.UNTAX_BILLTYPE_ID = ub.CHR_ID
+	</select>
+</mapper>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.UnitItemBankDao">
+	<select id="get" resultType="UnitItemBank" parameterType="UnitItemBank">
+		SELECT
+			CHR_ID,ACCOUNT,ACCOUNT_NAME,MAIN_ID,BANK_ID,ORDER_NUM,ACCOUNT_ID,LAST_VER
+		FROM 
+			UNTAX_UNITITEM_BANK
+	</select>
+	
+	<insert id="insert" parameterType="UnitItemBank" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT UNITITEMBANK_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+		UNTAX_UNITITEM_BANK(CHR_ID,ACCOUNT,ACCOUNT_NAME,MAIN_ID,BANK_ID,ORDER_NUM,ACCOUNT_ID,LAST_VER)
+		VALUES
+			(#{chrId},#{account,jdbcType=VARCHAR},#{accountName,jdbcType=VARCHAR},#{mainId},#{bankId,jdbcType=VARCHAR},#{orderNum},#{accountId},#{lastVer})
+	</insert>
+	
+	<delete id="delete" parameterType="UnitItemBank" >
+		DELETE FROM
+			UNTAX_UNITITEM_BANK
+		WHERE
+			MAIN_ID=#{mainId}
+	</delete> 
+	
+	<update id="update" parameterType="UnitItemBank">
+		UPDATE
+			UNTAX_UNITITEM_BANK
+		SET
+			CHR_ID=#{chrId},ACCOUNT=#{account},ACCOUNT_NAME=#{accountName},MAIN_ID=#{mainId},BANK_ID=#{bankId},ORDER_NUM=#{orderNum},ACCOUNT_ID=#{accountId},LAST_VER=#{lastVer}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+	
+	
+		
+	<select id="getUnitItemBankListTotal" resultType="long" parameterType="UnitItemBank">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_UNITITEM_BANK
+	</select>
+	
+	<select id="getUnitItemBankListByCondition" resultType="com.xcmis.feefax.modules.entity.UnitItemBank" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, vui.* FROM (
+				SELECT
+					CHR_ID,ACCOUNT,ACCOUNT_NAME,MAIN_ID,BANK_ID,ORDER_NUM,ACCOUNT_ID,LAST_VER
+				FROM
+					UNTAX_UNITITEM_BANK vui
+		  ) vui where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) vui
+		WHERE <![CDATA[ vui.rowno > #{startrow} ]]>
+	</select>
+
+	<select id="findAllList" resultType="UnitItemBank" parameterType="UnitItemBank">
+		SELECT
+			uub.CHR_ID,uub.ACCOUNT,uub.ACCOUNT_NAME,uub.MAIN_ID,uub.BANK_ID,uub.ORDER_NUM,uub.ACCOUNT_ID,uub.LAST_VER,
+			vur.CHR_NAME as vurChrName,vur.CHR_CODE as vurChrCode,vur.ACCOUNT_NO as vurAccountNo,vur.ACCOUNT_NAME as vurAccountName
+		FROM
+			UNTAX_UNITITEM_BANK uub, VW_UNTAX_RECEIVERACCOUNT vur
+		<where>
+			uub.ACCOUNT_ID = vur.CHR_ID
+			<if test="mainId != null and mainId != '' ">
+				AND uub.MAIN_ID=#{mainId}
+			</if>
+		</where>
+	</select>
+
+
+	<select id="getUnitItemBankByenIdAndBilltypeId" resultType="UnitItemBank" parameterType="UnitItemBank">
+		SELECT
+			uub.ACCOUNT_ID as accountId,vur.CHR_NAME as vurChrName,vur.CHR_CODE as vurChrCode,vur.ACCOUNT_NO as vurAccountNo,vur.BANK_NAME as vurAccountName
+		FROM
+			UNTAX_UNIT_ITEM uui,UNTAX_UNITITEM_BANK uub,VW_UNTAX_RECEIVERACCOUNT vur
+		WHERE
+			UUI.IS_DELETED=0 and vur.IS_DELETED=0 and uub.ACCOUNT_ID = vur.CHR_ID and UUI.CHR_ID = uub.MAIN_ID and UUI.CHR_ID in (select uui.CHR_ID from UNTAX_UNIT_ITEM uui,UNTAX_UNITITEM_BILLFORM uubf  where uui.IEN_ID=#{ienId} and uubf.BILLTYPE_ID=#{billtypeId} and UUI.CHR_ID = uubf.MAIN_ID and UUI.IS_DELETED=0)
+		GROUP BY
+			uub.ACCOUNT_ID,vur.CHR_NAME,vur.CHR_CODE,vur.ACCOUNT_NO,vur.BANK_NAME
+		ORDER BY
+			uub.ACCOUNT_ID desc
+	</select>
+
+
+	<select id="getUnitItemBankByenId" resultType="UnitItemBank" parameterType="UnitItemBank">
+		SELECT
+			uub.ACCOUNT_ID as accountId,vur.CHR_NAME as vurChrName,vur.CHR_CODE as vurChrCode,vur.ACCOUNT_NO as vurAccountNo,vur.BANK_NAME as vurAccountName
+		FROM
+			UNTAX_UNIT_ITEM uui,UNTAX_UNITITEM_BANK uub,VW_UNTAX_RECEIVERACCOUNT vur
+		WHERE
+			UUI.IS_DELETED=0 and vur.IS_DELETED=0 and uub.ACCOUNT_ID = vur.CHR_ID and UUI.CHR_ID = uub.MAIN_ID and UUI.CHR_ID in (select uui.CHR_ID from UNTAX_UNIT_ITEM uui,UNTAX_UNITITEM_BILLFORM uubf  where uui.IEN_ID=#{ienId}  and UUI.CHR_ID = uubf.MAIN_ID and UUI.IS_DELETED=0)
+		GROUP BY
+			uub.ACCOUNT_ID,vur.CHR_NAME,vur.CHR_CODE,vur.ACCOUNT_NO,vur.BANK_NAME
+		ORDER BY
+			uub.ACCOUNT_ID desc
+	</select>
+</mapper>

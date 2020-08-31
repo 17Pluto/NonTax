@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.framework.modules.dao.UserOrgDao">
+	<insert id="insert" parameterType="UserOrg" >
+		INSERT INTO
+			SYS_USER_ORG(USER_ID,ORG_ID,LAST_VER,SET_YEAR)
+		VALUES
+			(#{userId},#{orgId},#{lastVer},#{setYear})
+	</insert>
+
+	<delete id="delete" parameterType="UserOrg" >
+		DELETE FROM
+			SYS_USER_ORG
+		WHERE
+			USER_ID=#{userId}
+	</delete>
+
+	<select id="findAllList" resultType="UserOrg" parameterType="UserOrg">
+		SELECT
+			USER_ID,ORG_ID,LAST_VER,SET_YEAR
+		FROM
+			SYS_USER_ORG
+		<where>
+			<if test="userId != null and userId != '' ">
+				AND USER_ID=#{userId}
+			</if>
+			<if test="orgId != null and orgId != '' ">
+				AND ORG_ID=#{orgId}
+			</if>
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BillDetailDao">
+	<select id="get" resultType="BillDetail" parameterType="BillDetail">
+		SELECT
+			ubd.CHR_ID as chrId,ubd.UNTAX_BILLNAME_ID as untaxBillnameId,ubd.BILL_NO as billNo,ubd.LAST_VER as lastVer,ubd.STATE as state,ubd.IS_END_REPORT as isEndReport, ub.CHR_NAME as untaxBillname,
+			ub.PACKNUM as packnum
+		FROM
+			UNTAX_BILL_DETAIL ubd,UNTAX_BILLNAME ub
+		<where>
+			ubd.UNTAX_BILLNAME_ID = ub.CHR_ID
+			<if test="chrId != null and chrId != '' ">
+				AND ubd.CHR_ID=#{chrId}
+			</if>
+			<if test="mainId != null and mainId != '' ">
+				AND ubd.MAIN_ID=#{mainId}
+			</if>
+			<if test="billNo != null and billNo != '' ">
+				AND ubd.BILL_NO=#{billNo}
+			</if>
+			<if test="untaxBillnameId != null and untaxBillnameId != '' ">
+				AND ubd.UNTAX_BILLNAME_ID=#{untaxBillnameId}
+			</if>
+		</where>
+	</select>
+
+	<select id="getBillDetailMinNo" resultType="BillDetail" parameterType="BillDetail">
+		SELECT
+			min(BILL_NO) as billNo
+		FROM
+			UNTAX_BILL_DETAIL
+		<where>
+			STATE='0' AND BILLDISTRIBUTER like CONCAT(CONCAT('%',#{billdistributer}),'%') AND UNTAX_BILLNAME_ID=#{untaxBillnameId} AND EN_ID=#{enId}
+		</where>
+	</select>
+
+	<select id="isvalidBillNo" resultType="BillDetail" parameterType="BillDetail">
+		SELECT
+			*
+		FROM
+			UNTAX_BILL_DETAIL
+		<where>
+			STATE='0' AND BILLDISTRIBUTER like CONCAT(CONCAT('%',#{billdistributer}),'%') AND UNTAX_BILLNAME_ID=#{untaxBillnameId} AND EN_ID=#{enId} AND BILL_NO=#{billNo}
+		</where>
+	</select>
+
+	<insert id="insert" parameterType="BillDetail" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BILLDETAIL_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_BILL_DETAIL(
+				CHR_ID,UNTAX_BILLNAME_ID,BILL_NO,LAST_VER,STATE,EN_ID,MAIN_ID,BILLDISTRIBUTER
+			)
+		VALUES
+			(#{chrId},#{untaxBillnameId},#{billNo},#{lastVer},#{state},#{enId},#{mainId},#{billdistributer})
+	</insert> 
+	
+	<delete id="delete" parameterType="BillDetail" >
+		DELETE FROM
+			UNTAX_BILL_DETAIL
+		<where>
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+			<if test="mainId != null and mainId != '' ">
+				AND MAIN_ID=#{mainId}
+			</if>
+		</where>
+	</delete>
+	
+	<update id="update" parameterType="BillDetail">
+		UPDATE
+			UNTAX_BILL_DETAIL
+		SET
+			STATE=#{state}
+		WHERE
+			BILL_NO=#{billNo} and UNTAX_BILLNAME_ID=#{untaxBillnameId}
+	</update>
+
+	<select id="findAllList" resultType="BillDetail" parameterType="BillDetail">
+		SELECT
+			CHR_ID,UNTAX_BILLNAME_ID,BILL_NO,LAST_VER,STATE,IS_END_REPORT
+		FROM
+			UNTAX_BILL_DETAIL
+	</select>
+
+
+	<select id="findListByCondition" resultType="BillDetail" parameterType="BillDetail">
+		SELECT
+			ubd.CHR_ID as chrId,ubd.UNTAX_BILLNAME_ID as untaxBillnameId,ubd.BILL_NO as billNo,ubd.LAST_VER as lastVer,ubd.STATE as state,ubd.IS_END_REPORT as isEndReport, ub.CHR_NAME as untaxBillname,
+			ub.PACKNUM as packnum,ub.BILL_LENGTH as billLength
+		FROM
+			UNTAX_BILL_DETAIL ubd,UNTAX_BILLNAME ub
+		<where>
+			ubd.STATE=0 AND ubd.UNTAX_BILLNAME_ID = ub.CHR_ID
+			<if test="untaxBillnameId != null and untaxBillnameId != '' ">
+				AND ubd.UNTAX_BILLNAME_ID=#{untaxBillnameId}
+			</if>
+			<if test="enId != null and enId != '' ">
+				AND ubd.EN_ID=#{enId}
+			</if>
+			<if test="billdistributer != null and billdistributer != '' ">
+				AND ubd.BILLDISTRIBUTER like CONCAT(CONCAT('%',#{billdistributer}),'%')
+			</if>
+		</where>
+		ORDER BY
+			ubd.BILL_NO asc
+	</select>
+
+
+	<update id="updateIsEndReport" parameterType="BillDetail">
+		UPDATE
+			UNTAX_BILL_DETAIL
+		SET
+			STATE=#{state},IS_END_REPORT=#{isEndReport}
+		WHERE
+			BILL_NO=#{billNo} and UNTAX_BILLNAME_ID=#{untaxBillnameId}
+	</update>
+
+	<select id="findUntaxBill" resultType="BillDetail" parameterType="BillDetail">
+		SELECT
+			ubd.UNTAX_BILLNAME_ID as untaxBillnameId,ub.CHR_NAME as untaxBillname
+		FROM
+			UNTAX_BILL_DETAIL ubd,UNTAX_BILLNAME ub
+		where
+			ubd.UNTAX_BILLNAME_ID = ub.CHR_ID
+			AND ubd.BILLDISTRIBUTER like CONCAT(CONCAT('%',#{billdistributer}),'%')
+		group by ubd.UNTAX_BILLNAME_ID, ub.CHR_NAME
+	</select>
+
+</mapper>

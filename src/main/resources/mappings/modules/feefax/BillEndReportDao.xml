@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BillEndReportDao">
+	<select id="get" resultType="BillEndReport" parameterType="BillEndReport">
+		SELECT
+            SET_YEAR as setYear, CHR_ID as chrId, CREATE_DATE as createDate, CREATE_USER as createUser,
+            LATEST_OP_DATE as latestOpDate, IS_DELETED as isDeleted, LATEST_OP_USER as latestOpUser, RG_CODE as rgCode,
+            BILLSERIAL_NO as billserialNo, EN_ID as enId, ORDER_NUM as orderNum, REMARK as remark, RCID as rcid,
+            ISEND as isend, DATA_SOURCE as dataSource
+		FROM
+            UNTAX_0_BILLENDREPORT
+		WHERE
+			IS_DELETED=0
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+	</select>	
+	
+	<insert id="insert" parameterType="BillEndReport" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BILLENDREPORT_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+            UNTAX_0_BILLENDREPORT(SET_YEAR,CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,IS_DELETED,LATEST_OP_USER,RG_CODE,BILLSERIAL_NO,
+				EN_ID,ORDER_NUM,REMARK,ISEND,STATE_CODE)
+		VALUES
+			(#{setYear},#{chrId},#{createDate},#{createUser},#{latestOpDate},#{isDeleted},#{latestOpUser},
+				#{rgCode},#{billserialNo},#{enId},#{orderNum},#{remark},#{isend},#{stateCode}
+			)
+	</insert>
+
+	<delete id="delete" parameterType="BillEndReport" >
+		UPDATE 
+			UNTAX_0_BILLENDREPORT
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete>
+
+
+		
+	<select id="getBillEndReportListTotal" resultType="long" parameterType="BillEndReport">
+		SELECT
+			count(ub.CHR_ID) as num
+		FROM
+			UNTAX_0_BILLENDREPORT ub, SYS_USERMANAGE su
+		WHERE
+			ub.IS_DELETED = 0 AND ub.CREATE_USER = su.USER_ID(+)
+		<if test="enId != null and enId != '' ">
+			AND ub.EN_ID = #{enId}
+		</if>
+		<if test="stateCode != null and stateCode != '' and stateCode != '000'">
+			AND ub.STATE_CODE = #{stateCode}
+		</if>
+		<if test="untaxBilltypeId != null and untaxBilltypeId != '' ">
+			AND ub.CHR_ID in(select main_id from UNTAX_0_BILLENDREPORT_DETAIL where UNTAX_BILLTYPE_ID=#{untaxBilltypeId})
+		</if>
+		<if test="beginCreateDate != null and beginCreateDate != '' ">
+			AND uc.CREATE_DATE &gt;= #{beginCreateDate}
+		</if>
+		<if test="endCreateDate != null and endCreateDate != '' ">
+			AND uc.CREATE_DATE &lt;= #{endCreateDate}
+		</if>
+	</select>
+	
+	<select id="getBillEndReportListByCondition" resultType="BillEndReport" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ub.* FROM (
+				SELECT
+					ub.SET_YEAR as setYear,ub.CHR_ID as chrId,ub.CREATE_DATE as createDate,ub.CREATE_USER as createUser,
+					ub.LATEST_OP_DATE as latestOpDate,ub.IS_DELETED as isdeleted,
+					ub.LATEST_OP_USER as latestOpUser,ub.RG_CODE as rgCode,ub.BILLSERIAL_NO as billserialNo,
+					ub.EN_ID as enId,ub.ORDER_NUM as orderNum,ub.REMARK as remark,
+					ub.ISEND as isend,eie.CHR_NAME as enName, su.USER_NAME as userName
+				FROM
+					UNTAX_0_BILLENDREPORT ub,ELE_INCOME_ENTERPRISE eie, SYS_USERMANAGE su
+				WHERE
+					ub.IS_DELETED = 0 AND ub.EN_ID = eie.CHR_ID(+) AND ub.CREATE_USER = su.USER_ID(+)
+				<if test="billEndReport.enId != null and billEndReport.enId != '' ">
+					AND ub.EN_ID = #{billEndReport.enId}
+				</if>
+				<if test="billEndReport.stateCode != null and billEndReport.stateCode != '' and billEndReport.stateCode != '000'">
+					AND ub.STATE_CODE = #{billEndReport.stateCode}
+				</if>
+				<if test="billEndReport.untaxBilltypeId != null and billEndReport.untaxBilltypeId != '' ">
+					AND ub.CHR_ID in(select main_id from UNTAX_0_BILLENDREPORT_DETAIL where UNTAX_BILLTYPE_ID=#{billEndReport.untaxBilltypeId})
+				</if>
+				<if test="billEndReport.beginCreateDate != null and billEndReport.beginCreateDate != '' ">
+					AND ub.CREATE_DATE &gt;= #{billEndReport.beginCreateDate}
+				</if>
+				<if test="billEndReport.endCreateDate != null and billEndReport.endCreateDate != '' ">
+					AND ub.CREATE_DATE &lt;= #{billEndReport.endCreateDate}
+				</if>
+				<choose>
+					<when test="sort !=null and sort != ''">
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY ub.CREATE_DATE desc
+					</otherwise>
+				</choose>
+		) ub where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ub
+		WHERE <![CDATA[ ub.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="BillEndReport" parameterType="BillEndReport">
+		SELECT
+			SET_YEAR,CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,IS_DELETED,LATEST_OP_USER,RG_CODE,BILLSERIAL_NO,
+			EN_ID,RECEIVER,ORDER_NUM,REMARK,BELONG_ORG,ORG_TYPE,PUTSALE_DATE,RCID,ISEND,COLLECT_ID,
+			IS_SEND,RECEIVETYPE,PRINTFLAG,PRINTDATE,UNTAX_RECEIVEBOOK_ID,AREA_SOURCE,IS_BILL_BACK
+		FROM
+			UNTAX_0_BILLPUTSALE
+		WHERE
+			IS_DELETED=0
+	</select>
+
+
+	<update id="update" parameterType="BillEndReport">
+		UPDATE
+			UNTAX_0_BILLENDREPORT
+		SET
+			EN_ID=#{enId},LATEST_OP_DATE=#{latestOpDate},LATEST_OP_USER=#{latestOpUser}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="checkBillEndReport" parameterType="BillEndReport">
+		UPDATE
+			UNTAX_0_BILLENDREPORT
+		SET
+			STATE_CODE=#{stateCode}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+
+	<select id="getMaxNo" resultType="String" parameterType="BillEndReport">
+		SELECT
+			max(BILLSERIAL_NO) as billserialNo
+		FROM
+			UNTAX_0_BILLENDREPORT
+	</select>
+</mapper>

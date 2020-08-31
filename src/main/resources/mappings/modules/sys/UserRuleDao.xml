@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.framework.modules.dao.UserRuleDao">
+	<insert id="insert" parameterType="UserRule" >
+		INSERT INTO
+			SYS_USER_RULE(USER_ID,RULE_ID,SET_YEAR,LAST_VER,RG_CODE)
+		VALUES
+			(#{userId},#{ruleId},#{setYear},#{lastVer},#{rgCode})
+	</insert>
+
+	<delete id="delete" parameterType="UserRule" >
+		DELETE FROM
+			SYS_USER_RULE
+		WHERE
+			USER_ID=#{userId}
+	</delete>
+
+	<select id="findAllList" resultType="UserRule" parameterType="UserRule">
+		SELECT
+			USER_ID,RULE_ID,SET_YEAR,LAST_VER,RG_CODE
+		FROM
+			SYS_USER_RULE
+		<where>
+			<if test="userId != null and userId != '' ">
+				AND USER_ID=#{userId}
+			</if>
+		</where>
+	</select>
+</mapper>

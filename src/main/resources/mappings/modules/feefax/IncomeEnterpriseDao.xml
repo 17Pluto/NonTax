@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.IncomeEnterpriseDao">
+	<select id="get" resultType="IncomeEnterprise" parameterType="IncomeEnterprise">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,IS_DELETED,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,RG_CODE,PARENT_ID,
+			CREATE_DATE,CREATE_USER,LATEST_OP_DATE,LATEST_OP_USER,LAST_VER,CHR_ID1,CHR_ID2,CHR_ID3,CHR_ID4,CHR_ID5,EN_ID,IND_ID,FEELICENCECODE,
+			UNIT_KIND,UNIT_ADDRESS,UNIT_POST,BILL_MAN,BURSAR_MAN,BURSAR_TELL,FINANCE_MAN,FINANCE_TELL,UNIT_MAN,UNIT_TELL,ONLYBILLUNIT,ORGAN_CODE
+		FROM 
+			ELE_INCOME_ENTERPRISE
+		WHERE
+			IS_DELETED=0
+		<if test="chrId != null and chrId != '' ">
+			AND CHR_ID=#{chrId}
+		</if>
+		<if test="chrCode != null and chrCode != '' ">
+			AND CHR_CODE=#{chrCode}
+		</if>
+	</select>
+
+
+	<select id="getIncomeEnterpriseListTotal" resultType="long" parameterType="IncomeEnterprise">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			ELE_INCOME_ENTERPRISE
+		WHERE
+			IS_DELETED = '0'
+	</select>
+	
+	<select id="getIncomeEnterpriseListByCondition" resultType="IncomeEnterprise" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ru.* FROM (
+				SELECT
+					SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,IS_DELETED,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,RG_CODE,PARENT_ID,
+					CREATE_DATE,CREATE_USER,LATEST_OP_DATE,LATEST_OP_USER,LAST_VER,CHR_ID1,CHR_ID2,CHR_ID3,CHR_ID4,CHR_ID5,EN_ID,IND_ID,FEELICENCECODE,
+					UNIT_KIND,UNIT_ADDRESS,UNIT_POST,BILL_MAN,BURSAR_MAN,BURSAR_TELL,FINANCE_MAN,FINANCE_TELL,UNIT_MAN,UNIT_TELL,ONLYBILLUNIT,ORGAN_CODE
+				FROM
+					ELE_INCOME_ENTERPRISE ru
+    			WHERE
+					ru.IS_DELETED = '0'
+
+				<choose>
+					<when test="sort !=null and sort != ''">				
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY ru.CHR_CODE ASC
+					</otherwise>
+				</choose>    				
+		  ) ru where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ru
+		WHERE <![CDATA[ ru.rowno > #{startrow} ]]>
+	</select>
+
+	<select id="findAllList" resultType="IncomeEnterprise" parameterType="IncomeEnterprise">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,IS_DELETED,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,RG_CODE,PARENT_ID,
+			CREATE_DATE,CREATE_USER,LATEST_OP_DATE,LATEST_OP_USER,LAST_VER,CHR_ID1,CHR_ID2,CHR_ID3,CHR_ID4,CHR_ID5,EN_ID,IND_ID,FEELICENCECODE,
+			UNIT_KIND,UNIT_ADDRESS,UNIT_POST,BILL_MAN,BURSAR_MAN,BURSAR_TELL,FINANCE_MAN,FINANCE_TELL,UNIT_MAN,UNIT_TELL,ONLYBILLUNIT,ORGAN_CODE
+		FROM
+			ELE_INCOME_ENTERPRISE
+		WHERE
+			IS_DELETED = '0'
+        <if test="setYear != null and setYear != '' ">
+			AND SET_YEAR = #{setYear}
+        </if>
+		<if test="chrId != null and chrId != '' ">
+			AND CHR_ID=#{chrId}
+		</if>
+		<if test="parentId != null and parentId != '' ">
+			AND PARENT_ID=#{parentId}
+		</if>
+		ORDER BY CHR_CODE ASC
+	</select>
+
+
+	<select id="getIncomeEnterpriseByChrId" resultType="IncomeEnterprise" parameterType="IncomeEnterprise">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,IS_DELETED,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,RG_CODE,PARENT_ID,
+			CREATE_DATE,CREATE_USER,LATEST_OP_DATE,LATEST_OP_USER,LAST_VER,CHR_ID1,CHR_ID2,CHR_ID3,CHR_ID4,CHR_ID5,EN_ID,IND_ID,FEELICENCECODE,
+			UNIT_KIND,UNIT_ADDRESS,UNIT_POST,BILL_MAN,BURSAR_MAN,BURSAR_TELL,FINANCE_MAN,FINANCE_TELL,UNIT_MAN,UNIT_TELL,ONLYBILLUNIT,ORGAN_CODE
+		FROM
+			ELE_INCOME_ENTERPRISE
+		WHERE
+			IS_DELETED = '0'
+		start with CHR_ID = #{chrId} connect by prior PARENT_ID = CHR_ID
+		order by CHR_ID
+	</select>
+</mapper>

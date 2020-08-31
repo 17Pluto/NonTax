@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.PrintTableDao">
+	<select id="get" resultType="PrintTable" parameterType="PrintTable">
+		SELECT
+			CHR_ID,CHR_CODE,CHR_NAME,BILLTYPE_ID,USER_ID,TABLE_X,TABLE_Y,TABLE_IMAGE
+		FROM
+			UNTAX_PRINT_TABLE
+		<where>
+			<if test="chrId != null and chrId != '' ">
+				and CHR_ID=#{chrId}
+			</if>
+			<if test="billtypeId != null and billtypeId != '' ">
+				and BILLTYPE_ID=#{billtypeId}
+			</if>
+			<if test="userId != null and userId != '' ">
+				and USER_ID=#{userId}
+			</if>
+		</where>
+	</select>	
+	
+	<insert id="insert" parameterType="PrintTable" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT PRINTTABLE_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_PRINT_TABLE(CHR_ID,CHR_CODE,CHR_NAME,BILLTYPE_ID,USER_ID,TABLE_X,TABLE_Y,TABLE_IMAGE
+			)
+		VALUES
+			(#{chrId},#{chrCode},#{chrName},#{billtypeId},#{userId},#{tableX},#{tableY},#{tableImage}
+			)
+	</insert> 
+	
+	<delete id="delete" parameterType="PrintTable" >
+		DELETE FROM
+			UNTAX_PRINT_TABLE
+		WHERE
+			CHR_ID=#{chrId}
+	</delete>
+	
+	<update id="update" parameterType="PrintTable">
+		UPDATE
+			UNTAX_PRINT_TABLE
+		SET
+			CHR_ID=#{chrId},CHR_CODE=#{chrCode},CHR_NAME=#{chrName},BILLTYPE_ID=#{billtypeId},USER_ID=#{userId},TABLE_X=#{tableX},TABLE_Y=#{tableY},TABLE_IMAGE=#{tableImage}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+		
+	<select id="getPrintTableListTotal" resultType="long" parameterType="PrintTable">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_PRINT_TABLE
+
+	</select>
+	
+	<select id="getPrintTableListByCondition" resultType="PrintTable" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ub.* FROM (
+				SELECT
+					CHR_ID,CHR_CODE,CHR_NAME,BILLTYPE_ID,USER_ID,TABLE_X,TABLE_Y,TABLE_IMAGE
+				FROM
+					UNTAX_PRINT_TABLE ub
+		  ) ub where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ub
+		WHERE <![CDATA[ ub.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="PrintTable" parameterType="PrintTable">
+		SELECT
+			CHR_ID,CHR_CODE,CHR_NAME,BILLTYPE_ID,USER_ID,TABLE_X,TABLE_Y,TABLE_IMAGE
+		FROM
+			UNTAX_PRINT_TABLE
+		WHERE
+			USER_ID='all'
+	</select>
+</mapper>

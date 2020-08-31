@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.UnitItemAccreditDao">
+	<select id="get" resultType="UnitItemAccredit" parameterType="UnitItemAccredit">
+		SELECT
+			CHR_ID,MAIN_ID,UNIT_ID,ORDER_NUM,LAST_VER
+		FROM
+			UNTAX_UNITITEM_ACCREDIT
+	</select>	
+	
+	<insert id="insert" parameterType="UnitItemAccredit" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT ACCREDIT_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+				UNTAX_UNITITEM_ACCREDIT(CHR_ID,MAIN_ID,UNIT_ID,ORDER_NUM,LAST_VER)
+		VALUES
+				(#{chrId},#{mainId},#{unitId},#{orderNum},#{lastVer})
+	</insert> 
+	
+	<delete id="delete" parameterType="UnitItemAccredit" >
+		DELETE FROM
+			UNTAX_UNITITEM_ACCREDIT
+		WHERE
+			MAIN_ID=#{mainId}
+	</delete>
+	
+	<update id="update" parameterType="UnitItemAccredit">
+		UPDATE
+			UNTAX_UNITITEM_ACCREDIT
+		SET
+			CHR_ID=#{chrId},MAIN_ID=#{mainId},UNIT_ID=#{unitId},ORDER_NUM=#{orderNum},LAST_VER=#{lastVer}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+		
+	<select id="getAccreditListTotal" resultType="long" parameterType="UnitItemAccredit">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_UNITITEM_ACCREDIT
+	</select>
+	
+	<select id="getAccreditListByCondition" resultType="UnitItemAccredit" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ub.* FROM (
+				SELECT
+					CHR_ID,MAIN_ID,UNIT_ID,ORDER_NUM,LAST_VER
+				FROM
+					UNTAX_UNITITEM_ACCREDIT ub
+				WHERE
+					IS_DELETED=0
+		  ) ub where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ub
+		WHERE <![CDATA[ ub.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="UnitItemAccredit" parameterType="UnitItemAccredit">
+		SELECT
+			uua.CHR_ID as chrId,uua.MAIN_ID as mainId,uua.UNIT_ID as unitId,uua.ORDER_NUM as orderNum,eie.CHR_NAME as unitName
+		FROM
+			UNTAX_UNITITEM_ACCREDIT uua, ELE_INCOME_ENTERPRISE eie
+		WHERE
+			uua.UNIT_ID = eie.CHR_ID
+		<if test="mainId != null and mainId != '' ">
+			AND uua.MAIN_ID=#{mainId}
+		</if>
+			order by uua.ORDER_NUM
+	</select>
+</mapper>

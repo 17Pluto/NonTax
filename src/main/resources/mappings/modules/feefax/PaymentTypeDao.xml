@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.PaymentTypeDao">
+	<select id="get" resultType="PaymentType" parameterType="String">
+		SELECT
+			ID,NAME,IS_MONEY,IS_DELETED,SET_YEAR,BH
+		FROM 
+			FF_PAYMENT_TYPE
+		WHERE
+			ID=#{id}
+	</select>	
+	
+	<insert id="insert" parameterType="PaymentType" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="id">
+	       	SELECT PAYMENTTYPE_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			FF_PAYMENT_TYPE(ID,NAME,IS_MONEY,SET_YEAR,BH)
+		VALUES
+			(#{id},#{name},#{isMoney},#{setYear},#{bh})
+	</insert> 
+	
+	<delete id="delete" parameterType="PaymentType" >
+		UPDATE 
+			FF_PAYMENT_TYPE
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			ID=#{id}
+	</delete> 
+	
+	<update id="update" parameterType="PaymentType">
+		UPDATE 
+			FF_PAYMENT_TYPE
+		SET 
+			NAME=#{name},IS_MONEY=#{isMoney},SET_YEAR=#{setYear},BH=#{bh}
+		WHERE 
+			ID=#{id}
+	</update>
+	
+	
+		
+	<select id="getPaymentTypeListTotal" resultType="long" parameterType="PaymentType">
+		SELECT
+			count(ID) as num
+		FROM
+			FF_PAYMENT_TYPE
+		WHERE
+			IS_DELETED = '0'
+	</select>
+	
+	<select id="getPaymentTypeListByCondition" resultType="PaymentType" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, se.* FROM (
+				SELECT
+					se.ID as id,se.NAME as name,se.IS_MONEY as isMoney,se.IS_DELETED as isDeleted,se.SET_YEAR as setYear,se.BH as bh
+				FROM
+					FF_PAYMENT_TYPE se
+    			WHERE
+    				se.IS_DELETED = '0'
+				<choose>
+					<when test="sort !=null and sort != ''">				
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY se.ID DESC
+					</otherwise>
+				</choose>    				
+		  ) se where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) se
+		WHERE <![CDATA[ se.rowno > #{startrow} ]]>		
+		
+	</select>
+	
+	<select id="findAllList" resultType="PaymentType" parameterType="PaymentType">
+		SELECT 
+			ID,NAME,IS_MONEY,IS_DELETED,SET_YEAR
+		FROM 
+			FF_PAYMENT_TYPE
+		WHERE
+			IS_DELETED = '0'
+	</select>
+</mapper>

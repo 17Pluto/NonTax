@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.IncomeItemDao">
+	<select id="get" resultType="IncomeItem" parameterType="IncomeItem">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,IS_DELETED,LATEST_OP_USER,LAST_VER,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,RG_CODE,PARENT_ID,CHR_ID1,CHR_ID2,CHR_ID3,CHR_ID4,CHR_ID5,CHR_CODE6,CHR_CODE7,CHR_CODE8,CHR_CODE9,CHR_ID6,CHR_ID7
+			,CHR_ID8,CHR_ID9,ITEMSORT_ID,CHARGEKIND_ID,MANAGEBRANCH,BEGIN_TIME,END_TIME,REMARK,KEYWORD,UPLIMIT,LOWLIMIT,ANCESTOR_ID,MEASURE,FEESTANDARDTYPE,ENABLE_USEDATE,FILE_NO,IN_BS_ID,COSTTYPE
+			,COSTPRICE,PREITEMID,MK_ID,IN_ITEMAT_ID,IS_CHANGE,CHANGE_APPLY_USER,CHANGE_AUDIT_USER,CHANGE_DATE
+			,CHANGE_FILE_ID,GATHER_ITEMID,DIVPROVINCE_ID,IS_DIV,IS_END,IS_COMMON,BACKREMARK,DIVSTANDARD_ID,DIVSTANDARD_CODE,DIV_MODE
+			,CENTER_VALUE,PROVINCE_VALUE,CITY_VALUE,COUNTY_VALUE,IS_PARENT,IS_ALL_USE,PARENT_ID_ALL,IN_BS_ID_ALL,MK_ID_ALL,DIVSTANDARD_ID_ALL
+			,ITEMSORT_ID_ALL,CHARGEKIND_ID_ALL
+		FROM 
+			ELE_INCOME_ITEM
+		WHERE
+			IS_DELETED=0
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+			<if test="chrCode != null and chrCode != '' ">
+				AND CHR_CODE=#{chrCode}
+			</if>
+	</select>
+	
+	<insert id="insert" parameterType="IncomeItem" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT INCOMEITEM_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			ELE_INCOME_ITEM(SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,CREATE_DATE,CREATE_USER,
+				LATEST_OP_DATE,IS_DELETED,LATEST_OP_USER,LAST_VER,RG_CODE,PARENT_ID,ITEMSORT_ID,CHARGEKIND_ID,MANAGEBRANCH,
+				BEGIN_TIME,END_TIME,REMARK,KEYWORD,UPLIMIT,LOWLIMIT,ANCESTOR_ID,MEASURE,FEESTANDARDTYPE,ENABLE_USEDATE,FILE_NO,IN_BS_ID,COSTTYPE,
+				COSTPRICE,PREITEMID,MK_ID,IN_ITEMAT_ID,IS_CHANGE,CHANGE_APPLY_USER,CHANGE_AUDIT_USER,CHANGE_DATE,CHANGE_FILE_ID,GATHER_ITEMID,DIVPROVINCE_ID,
+				IS_DIV,IS_END,IS_COMMON,BACKREMARK,DIVSTANDARD_ID,DIVSTANDARD_CODE,DIV_MODE,CENTER_VALUE,PROVINCE_VALUE,CITY_VALUE,COUNTY_VALUE,IS_PARENT,
+				IS_ALL_USE,PARENT_ID_ALL,IN_BS_ID_ALL,MK_ID_ALL,DIVSTANDARD_ID_ALL,ITEMSORT_ID_ALL,CHARGEKIND_ID_ALL,STATE_CODE)
+		VALUES
+			(#{setYear},#{chrId},#{chrCode},#{dispCode},#{chrName},#{levelNum},#{isLeaf},#{enabled,jdbcType=INTEGER},#{createDate},#{createUser},
+				#{latestOpDate},#{isDeleted,jdbcType=INTEGER},#{latestOpUser,jdbcType=VARCHAR},#{lastVer,jdbcType=VARCHAR},#{rgCode,jdbcType=VARCHAR},#{parentId,jdbcType=VARCHAR},#{itemsortId,jdbcType=VARCHAR},#{chargekindId},#{managebranch,jdbcType=VARCHAR},
+				#{beginTime,jdbcType=VARCHAR},#{endTime,jdbcType=VARCHAR},#{remark,jdbcType=VARCHAR},#{keyword,jdbcType=VARCHAR},#{uplimit,jdbcType=BIGINT},#{lowlimit,jdbcType=BIGINT},#{ancestorId,jdbcType=VARCHAR},#{measure,jdbcType=VARCHAR},#{feestandardtype,jdbcType=INTEGER},#{enableUsedate,jdbcType=INTEGER},#{fileNo,jdbcType=VARCHAR},#{inBsId,jdbcType=VARCHAR},#{costtype,jdbcType=INTEGER},
+				#{costprice,jdbcType=DOUBLE},#{preitemid,jdbcType=VARCHAR},#{mkId,jdbcType=VARCHAR},#{inItematId,jdbcType=VARCHAR},#{isChange,jdbcType=INTEGER},#{changeApplyUser,jdbcType=VARCHAR},#{changeAuditUser,jdbcType=VARCHAR},#{changeDate,jdbcType=VARCHAR},#{changeFileId,jdbcType=VARCHAR},#{gatherItemid,jdbcType=VARCHAR},#{divprovinceId,jdbcType=VARCHAR},
+				#{isDiv,jdbcType=INTEGER},#{isEnd,jdbcType=INTEGER},#{isCommon,jdbcType=INTEGER},#{backremark,jdbcType=VARCHAR},#{divstandardId,jdbcType=VARCHAR},#{divstandardCode,jdbcType=VARCHAR},#{divMode,jdbcType=INTEGER},#{centerValue,jdbcType=VARCHAR},#{provinceValue,jdbcType=VARCHAR},#{cityValue,jdbcType=VARCHAR},#{countyValue,jdbcType=INTEGER},#{isParent,jdbcType=INTEGER},
+				#{isAllUse,jdbcType=INTEGER},#{parentIdAll,jdbcType=VARCHAR},#{inBsIdAll,jdbcType=VARCHAR},#{mkIdAll,jdbcType=VARCHAR},#{divstandardIdAll,jdbcType=VARCHAR},#{itemsortIdAll,jdbcType=VARCHAR},#{chargekindIdAll,jdbcType=VARCHAR},#{stateCode})
+	</insert> 
+	
+	<delete id="delete" parameterType="IncomeItem" >
+		UPDATE 
+			ELE_INCOME_ITEM
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete> 
+	
+	<update id="update" parameterType="IncomeItem">
+		UPDATE
+			ELE_INCOME_ITEM
+		SET
+			CHR_ID = #{chrId},CHR_CODE = #{chrCode},DISP_CODE = #{dispCode},CHR_NAME = #{chrName},LEVEL_NUM = #{levelNum},IS_LEAF = #{isLeaf},ENABLED = #{enabled,jdbcType=INTEGER},
+			LATEST_OP_DATE = #{latestOpDate,jdbcType=VARCHAR},IS_DELETED = #{isDeleted,jdbcType=INTEGER},LATEST_OP_USER=#{latestOpUser,jdbcType=VARCHAR},LAST_VER=#{lastVer,jdbcType=VARCHAR},RG_CODE=#{rgCode,jdbcType=VARCHAR},PARENT_ID=#{parentId,jdbcType=VARCHAR},ITEMSORT_ID=#{itemsortId,jdbcType=VARCHAR},CHARGEKIND_ID=#{chargekindId},MANAGEBRANCH=#{managebranch,jdbcType=VARCHAR},
+			BEGIN_TIME=#{beginTime,jdbcType=VARCHAR},END_TIME=#{endTime,jdbcType=VARCHAR},REMARK=#{remark,jdbcType=VARCHAR},KEYWORD=#{keyword,jdbcType=VARCHAR},UPLIMIT=#{uplimit,jdbcType=BIGINT},LOWLIMIT=#{lowlimit,jdbcType=BIGINT},ANCESTOR_ID=#{ancestorId,jdbcType=VARCHAR},MEASURE=#{measure,jdbcType=VARCHAR},FEESTANDARDTYPE=#{feestandardtype,jdbcType=INTEGER},ENABLE_USEDATE=#{enableUsedate,jdbcType=INTEGER},FILE_NO=#{fileNo,jdbcType=VARCHAR},IN_BS_ID=#{inBsId,jdbcType=VARCHAR},COSTTYPE=#{costtype,jdbcType=INTEGER},
+			COSTPRICE=#{costprice,jdbcType=DOUBLE},PREITEMID=#{preitemid,jdbcType=VARCHAR},MK_ID=#{mkId,jdbcType=VARCHAR},IN_ITEMAT_ID=#{inItematId,jdbcType=VARCHAR},IS_CHANGE=#{isChange,jdbcType=INTEGER},CHANGE_APPLY_USER=#{changeApplyUser,jdbcType=VARCHAR},CHANGE_AUDIT_USER=#{changeAuditUser,jdbcType=VARCHAR},CHANGE_DATE=#{changeDate,jdbcType=VARCHAR},CHANGE_FILE_ID=#{changeFileId,jdbcType=VARCHAR},GATHER_ITEMID=#{gatherItemid,jdbcType=VARCHAR},DIVPROVINCE_ID=#{divprovinceId,jdbcType=VARCHAR},
+			IS_DIV=#{isDiv,jdbcType=INTEGER},IS_END=#{isEnd,jdbcType=INTEGER},IS_COMMON=#{isCommon,jdbcType=INTEGER},BACKREMARK=#{backremark,jdbcType=VARCHAR},DIVSTANDARD_ID=#{divstandardId,jdbcType=VARCHAR},DIVSTANDARD_CODE=#{divstandardCode,jdbcType=VARCHAR},DIV_MODE=#{divMode,jdbcType=INTEGER},CENTER_VALUE=#{centerValue,jdbcType=VARCHAR},PROVINCE_VALUE=#{provinceValue,jdbcType=VARCHAR},CITY_VALUE=#{cityValue,jdbcType=VARCHAR},COUNTY_VALUE=#{countyValue,jdbcType=INTEGER},IS_PARENT=#{isParent,jdbcType=INTEGER},
+			IS_ALL_USE=#{isAllUse,jdbcType=INTEGER},PARENT_ID_ALL=#{parentIdAll,jdbcType=VARCHAR},IN_BS_ID_ALL=#{inBsIdAll,jdbcType=VARCHAR},MK_ID_ALL=#{mkIdAll,jdbcType=VARCHAR},DIVSTANDARD_ID_ALL=#{divstandardIdAll,jdbcType=VARCHAR},ITEMSORT_ID_ALL=#{itemsortIdAll,jdbcType=VARCHAR},CHARGEKIND_ID_ALL=#{chargekindIdAll,jdbcType=VARCHAR}
+		WHERE 
+			CHR_ID=#{chrId}
+	</update>
+	
+	
+		
+	<select id="getIncomeItemListTotal" resultType="long" parameterType="IncomeItem">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			ELE_INCOME_ITEM
+		WHERE
+			IS_DELETED = '0'
+        <if test="setYear != null and setYear != '' ">
+            AND SET_YEAR = #{setYear}
+        </if>
+		<if test="chrCode != null and chrCode != '' ">
+			AND CHR_CODE LIKE CONCAT(CONCAT('%',#{chrCode}),'%')
+		</if>
+		<if test="chrName != null and chrName != '' ">
+			AND CHR_NAME LIKE CONCAT(CONCAT('%',#{chrName}),'%')
+		</if>
+		<if test="stateCode != '000'">
+			AND STATE_CODE = #{stateCode}
+		</if>
+	</select>
+	
+	<select id="getIncomeItemListByCondition" resultType="IncomeItem" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, vui.* FROM (
+				SELECT
+					vui.CHR_CODE as chrCode,vui.DISP_CODE as dispCode,vui.CHR_NAME as chrName,vui.LEVEL_NUM as levelNum,vui.ENABLED as enabled,vui.IS_DELETED as isDeleted,
+					vui.IS_LEAF as isLeaf,vui.CHR_ID as chrId,uc.CHR_NAME as chargekindName, ui.CHR_NAME as itemsortName,ebsi.CHR_NAME as inBsName,emk.CHR_NAME as mkName,vui.BEGIN_TIME,vui.END_TIME,vui.REMARK,
+					vui.PARENT_ID,vui.IN_BS_ID,vui.MK_ID,vui.DIVSTANDARD_ID,vui.ITEMSORT_ID,vui.CHARGEKIND_ID,vui.MANAGEBRANCH,vui.ENABLE_USEDATE
+				FROM
+					ELE_INCOME_ITEM vui, UNTAX_CHARGEKIND uc, UNTAX_ITEMSORT ui,ELE_BUDGET_SUBJECT_INCOME ebsi,ELE_MONEY_KIND emk
+    			WHERE
+					vui.IS_DELETED = '0'
+				AND
+					vui.CHARGEKIND_ID = uc.CHR_ID
+				AND
+					vui.ITEMSORT_ID = ui.CHR_ID
+				AND
+					vui.IN_BS_ID = ebsi.CHR_ID
+				AND
+					vui.MK_ID = emk.CHR_ID
+				<if test="incomeItem.chrCode != null and incomeItem.chrCode != '' ">
+					AND vui.CHR_CODE LIKE CONCAT(CONCAT('%',#{incomeItem.chrCode}),'%')
+				</if>
+				<if test="incomeItem.chrName != null and incomeItem.chrName != '' ">
+					AND vui.CHR_NAME LIKE CONCAT(CONCAT('%',#{incomeItem.chrName}),'%')
+				</if>
+				<if test="incomeItem.stateCode != '000'">
+					AND vui.STATE_CODE = #{incomeItem.stateCode}
+				</if>
+				<choose>
+					<when test="sort !=null and sort != ''">				
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY vui.DISP_CODE ASC
+					</otherwise>
+				</choose>    				
+		  ) vui where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) vui
+		WHERE <![CDATA[ vui.rowno > #{startrow} ]]>
+	</select>
+
+	<select id="getIncomeItemListByChrId" resultType="IncomeItem" parameterType="IncomeItem">
+		SELECT
+			eii.CHR_CODE as chrCode,eii.CHR_NAME as chrName,eii.CHR_ID as chrId,eii.PARENT_ID as parentId
+		FROM
+			ELE_INCOME_ITEM eii
+		WHERE
+			eii.IS_DELETED = '0'
+			start with eii.CHR_ID = #{chrId} connect by prior eii.PARENT_ID = eii.CHR_ID
+	</select>
+	
+	<select id="findAllList" resultType="IncomeItem" parameterType="IncomeItem">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,IS_DELETED,LATEST_OP_USER,LAST_VER,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,RG_CODE,PARENT_ID,CHR_ID1,CHR_ID2,CHR_ID3,CHR_ID4,CHR_ID5,CHR_CODE6,CHR_CODE7,CHR_CODE8,CHR_CODE9,CHR_ID6,CHR_ID7
+			,CHR_ID8,CHR_ID9,ITEMSORT_ID,CHARGEKIND_ID,MANAGEBRANCH,BEGIN_TIME,END_TIME,REMARK,KEYWORD,UPLIMIT,LOWLIMIT,ANCESTOR_ID,MEASURE,FEESTANDARDTYPE,ENABLE_USEDATE,FILE_NO,IN_BS_ID,COSTTYPE
+			,COSTPRICE,PREITEMID,MK_ID,IN_ITEMAT_ID,IS_CHANGE,CHANGE_APPLY_USER,CHANGE_AUDIT_USER,CHANGE_DATE
+			,CHANGE_FILE_ID,GATHER_ITEMID,DIVPROVINCE_ID,IS_DIV,IS_END,IS_COMMON,BACKREMARK,DIVSTANDARD_ID,DIVSTANDARD_CODE,DIV_MODE
+			,CENTER_VALUE,PROVINCE_VALUE,CITY_VALUE,COUNTY_VALUE,IS_PARENT,IS_ALL_USE,PARENT_ID_ALL,IN_BS_ID_ALL,MK_ID_ALL,DIVSTANDARD_ID_ALL
+			,ITEMSORT_ID_ALL,CHARGEKIND_ID_ALL
+		FROM
+			ELE_INCOME_ITEM
+		WHERE
+			IS_DELETED = '0'
+        <if test="setYear != null and setYear != '' ">
+			AND SET_YEAR = #{setYear}
+        </if>
+		<if test="chrId != null and chrId != '' ">
+			AND CHR_ID=#{chrId}
+		</if>
+		<if test="parentId != null and parentId != '' ">
+			AND PARENT_ID=#{parentId}
+		</if>
+		<if test="stateCode != null and stateCode != '' ">
+			AND STATE_CODE=#{stateCode}
+		</if>
+		<if test="compareDate != null and compareDate != '' ">
+			AND ((ENABLE_USEDATE = '0' and BEGIN_TIME &gt; #{compareDate} and  END_TIME &lt; #{compareDate}) or (ENABLE_USEDATE = '1'))
+		</if>
+		ORDER BY DISP_CODE ASC
+	</select>
+
+
+	<select id="showIncomeItem" resultType="IncomeItem" parameterType="IncomeItem">
+		SELECT
+			vui.CHR_CODE as chrCode,vui.DISP_CODE as dispCode,vui.CHR_NAME as chrName,vui.LEVEL_NUM as levelNum,vui.ENABLED as enabled,vui.IS_DELETED as isDeleted,
+			vui.IS_LEAF as isLeaf,vui.CHR_ID as chrId,uc.CHR_NAME as chargekindName, ui.CHR_NAME as itemsortName,ebsi.CHR_NAME as inBsName,emk.CHR_NAME as mkName,vui.BEGIN_TIME,vui.END_TIME,vui.REMARK,
+			vui.MANAGEBRANCH,vui.ENABLE_USEDATE,vui.ENABLED,vui.ENABLE_USEDATE,vui.BEGIN_TIME,vui.END_TIME
+		FROM
+			ELE_INCOME_ITEM vui, UNTAX_CHARGEKIND uc, UNTAX_ITEMSORT ui,ELE_BUDGET_SUBJECT_INCOME ebsi,ELE_MONEY_KIND emk
+		WHERE
+			vui.IS_DELETED = '0'
+		AND
+			vui.CHARGEKIND_ID = uc.CHR_ID
+		AND
+			vui.ITEMSORT_ID = ui.CHR_ID
+		AND
+			vui.IN_BS_ID = ebsi.CHR_ID
+		AND
+			vui.MK_ID = emk.CHR_ID
+		<if test="chrId != null and chrId != '' ">
+			AND vui.CHR_ID=#{chrId}
+		</if>
+	</select>
+
+
+
+</mapper>

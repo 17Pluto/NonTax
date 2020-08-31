@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.IenusermanagDao">
+	<select id="findAllList" resultType="Ienusermanag" parameterType="Ienusermanag">
+		SELECT
+			ui.CHR_ID as chrId, ui.IEN_ID as ienId, ui.USER_ID as userId, eie.CHR_CODE as eieChrCode, eie.CHR_NAME as eieChrName,
+			ru.CHR_CODE as ruChrCode, ru.CHR_NAME as ruChrName
+		FROM
+			UNTAX_IENUSERMANAGE ui,ELE_INCOME_ENTERPRISE eie,RG_USER ru
+		where
+			ui.IEN_ID=eie.CHR_ID AND ui.USER_ID=ru.CHR_ID
+			<if test="ienId != null and ienId != '' ">
+				AND ui.IEN_ID = #{ienId}
+			</if>
+			<if test="userId != null and userId != '' ">
+				AND ui.USER_ID = #{userId}
+			</if>
+		ORDER BY eieChrCode ASC
+	</select>
+
+
+
+	<select id="findList" resultType="Ienusermanag" parameterType="Ienusermanag">
+		SELECT
+			ui.CHR_ID as chrId, ui.IEN_ID as ienId, ui.USER_ID as userId, eie.CHR_CODE as eieChrCode, eie.CHR_NAME as eieChrName,
+			ru.CHR_CODE as ruChrCode, ru.CHR_NAME as ruChrName
+		FROM
+			UNTAX_IENUSERMANAGE ui,ELE_INCOME_ENTERPRISE eie,RG_USER ru
+		where
+			ui.IEN_ID=eie.CHR_ID AND ui.USER_ID=ru.CHR_ID
+		<if test="ienIds != null">
+			and ui.IEN_ID IN
+			<foreach collection="ienIds" item="ienId" open="(" separator=","  close=")">
+				#{ienId}
+			</foreach>
+		</if>
+		<if test="userId != null and userId != '' ">
+			AND ui.USER_ID = #{userId}
+		</if>
+		ORDER BY ui.CHR_ID ASC
+	</select>
+
+	<insert id="insert" parameterType="Ienusermanag" >
+		<selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+			SELECT IENUSERMANAGE_S.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO
+			UNTAX_IENUSERMANAGE(CHR_ID,IEN_ID,USER_ID,SET_YEAR,LAST_VER)
+		VALUES
+			(#{chrId},#{ienId},#{userId},#{setYear},#{lastVer})
+	</insert>
+
+
+	<delete id="delete" parameterType="Ienusermanag" >
+		DELETE FROM
+			UNTAX_IENUSERMANAGE
+		WHERE
+			IEN_ID=#{ienId}
+	</delete>
+</mapper>

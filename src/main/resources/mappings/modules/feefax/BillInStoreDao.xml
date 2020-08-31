@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BillInStoreDao">
+	<select id="get" resultType="BillInStore" parameterType="String">
+		SELECT
+			SET_YEAR,CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,IS_DELETED,LATEST_OP_USER,RG_CODE,BILLSERIAL_NO,MAKE_SHAN_REN_NAME,
+			MAKE_SHAN_REN_ID,MAKE_SHAN_DATE,EN_ID,UNTAX_BILLPUTTYPE_ID,UNTAX_BILLSOURCE_ID,DELIVER_NO,ORDER_NUM,REMARK,BELONG_ORG,
+			ORG_TYPE,INSTORE_DATE,RCID,ISEND,IS_BALANCE,IS_BILL_BACK
+		FROM
+			UNTAX_BILLINSTORE
+		WHERE
+			IS_DELETED=0
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+			<if test="chrCode != null and chrCode != '' ">
+				AND CHR_CODE=#{chrCode}
+			</if>
+	</select>	
+	
+	<insert id="insert" parameterType="BillInStore" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BILLINSTORE_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_BILLINSTORE(SET_YEAR,CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_Date,IS_DELETED,RG_CODE,BILLSERIAL_NO,
+				MAKE_SHAN_DATE,DELIVER_NO,REMARK,INSTORE_DATE,ISEND,IS_BALANCE,IS_BILL_BACK,STATE_CODE
+			)
+		VALUES
+			(#{setYear},#{chrId},#{createDate},#{createUser},#{latestOpDate},#{isDeleted},
+				#{rgCode},#{billserialNo},#{makeShanDate},#{deliverNo},#{remark},
+				#{instoreDate},#{isend},#{isBalance},#{isBillBack},#{stateCode}
+			)
+	</insert> 
+	
+	<delete id="delete" parameterType="BillInStore" >
+		UPDATE 
+			UNTAX_BILLINSTORE
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete>
+	
+	<update id="update" parameterType="BillInStore">
+		UPDATE
+			UNTAX_BILLINSTORE
+		SET
+			LATEST_OP_DATE=#{latestOpDate,jdbcType=VARCHAR},LATEST_OP_USER=#{latestOpUser,jdbcType=VARCHAR},
+			REMARK=#{remark,jdbcType=VARCHAR},INSTORE_DATE=#{instoreDate,jdbcType=VARCHAR},ISEND=#{isend},
+			IS_BALANCE=#{isBalance},IS_BILL_BACK=#{isBillBack}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+
+	<update id="checkBillInStore" parameterType="BillInStore">
+		UPDATE
+			UNTAX_BILLINSTORE
+		SET
+			ISEND=#{isend},STATE_CODE=#{stateCode}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+		
+	<select id="getBillInStoreListTotal" resultType="long" parameterType="BillInStore">
+		SELECT
+			count(ub.CHR_ID) as num
+		FROM
+			UNTAX_BILLINSTORE ub, SYS_USERMANAGE su
+		WHERE
+			ub.IS_DELETED = 0 AND ub.CREATE_USER = su.USER_ID(+)
+		<if test="enId != null and enId != '' ">
+			AND ub.EN_ID = #{enId}
+		</if>
+		<if test="stateCode != null and stateCode != '' and stateCode != '000'">
+			AND ub.STATE_CODE = #{stateCode}
+		</if>
+		<if test="startInstoreDate != null and startInstoreDate != '' ">
+			AND ub.INSTORE_DATE &gt;= #{startInstoreDate}
+		</if>
+		<if test="endInstoreDate != null and endInstoreDate != '' ">
+			AND ub.INSTORE_DATE &lt;= #{endInstoreDate}
+		</if>
+		<if test="userName != null and userName != '' ">
+			AND su.USER_NAME like CONCAT(CONCAT('%',#{userName}),'%')
+		</if>
+		<if test="untaxBillnameId != null and untaxBillnameId != '' ">
+			AND ub.CHR_ID in(select main_id from UNTAX_BILLINSTORE_LIST where UNTAX_BILLNAME_ID=#{untaxBillnameId})
+		</if>
+	</select>
+	
+	<select id="getBillInStoreListByCondition" resultType="BillInStore" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ub.* FROM (
+				SELECT
+					ub.SET_YEAR as setYear,ub.CHR_ID as chrId,ub.CREATE_DATE as createDate,ub.CREATE_USER as createUser,ub.LATEST_OP_DATE as latestOpDate,ub.IS_DELETED as isDeleted,
+					ub.LATEST_OP_USER as latestOpUser,ub.RG_CODE as rgCode,ub.BILLSERIAL_NO as billserialNo,ub.MAKE_SHAN_REN_NAME as makeShanRenName,
+					ub.MAKE_SHAN_REN_ID as makeShanRenId,ub.MAKE_SHAN_DATE as makeShanDate,ub.EN_ID as enId,ub.UNTAX_BILLPUTTYPE_ID as untaxBillputtypeId,ub.UNTAX_BILLSOURCE_ID as untaxBillsourceId,
+					ub.DELIVER_NO as deliverNo,ub.ORDER_NUM as orderNum,ub.REMARK as remark,ub.BELONG_ORG as belongOrg,ub.ORG_TYPE as orgType,ub.INSTORE_DATE as instoreDate,ub.RCID as rcid,ub.ISEND as isend,
+					ub.IS_BALANCE as isBalance,ub.IS_BILL_BACK as isBillBack,su.USER_NAME as userName
+				FROM
+					UNTAX_BILLINSTORE ub, SYS_USERMANAGE su
+				WHERE
+					ub.IS_DELETED = 0 AND ub.CREATE_USER = su.USER_ID(+)
+				<if test="billInStore.enId != null and billInStore.enId != '' ">
+					AND ub.EN_ID = #{billInStore.enId}
+				</if>
+				<if test="billInStore.stateCode != null and billInStore.stateCode != '' and billInStore.stateCode != '000'">
+					AND ub.STATE_CODE = #{billInStore.stateCode}
+				</if>
+				<if test="billInStore.startInstoreDate != null and billInStore.startInstoreDate != '' ">
+					AND ub.INSTORE_DATE &gt;= #{billInStore.startInstoreDate}
+				</if>
+				<if test="billInStore.endInstoreDate != null and billInStore.endInstoreDate != '' ">
+					AND ub.INSTORE_DATE &lt;= #{billInStore.endInstoreDate}
+				</if>
+				<if test="billInStore.userName != null and billInStore.userName != '' ">
+					AND su.USER_NAME like CONCAT(CONCAT('%',#{billInStore.userName}),'%')
+				</if>
+				<if test="billInStore.untaxBillnameId != null and billInStore.untaxBillnameId != '' ">
+					AND ub.CHR_ID in(select main_id from UNTAX_BILLINSTORE_LIST where UNTAX_BILLNAME_ID=#{billInStore.untaxBillnameId})
+				</if>
+				<choose>
+					<when test="sort !=null and sort != ''">
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY ub.CREATE_DATE desc
+					</otherwise>
+				</choose>
+		) ub where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ub
+		WHERE <![CDATA[ ub.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="BillInStore" parameterType="BillInStore">
+		SELECT
+			SET_YEAR,CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,IS_DELETED,LATEST_OP_USER,RG_CODE,BILLSERIAL_NO,MAKE_SHAN_REN_NAME,
+			MAKE_SHAN_REN_ID,MAKE_SHAN_DATE,EN_ID,UNTAX_BILLPUTTYPE_ID,UNTAX_BILLSOURCE_ID,DELIVER_NO,ORDER_NUM,REMARK,BELONG_ORG,
+			ORG_TYPE,INSTORE_DATE,RCID,ISEND,IS_BALANCE,IS_BILL_BACK
+		FROM
+			UNTAX_BILLINSTORE
+		WHERE
+			IS_DELETED=0
+	</select>
+
+
+	<select id="getMaxNo" resultType="String" parameterType="BillInStore">
+		SELECT
+			max(BILLSERIAL_NO) as billserialNo
+		FROM
+			UNTAX_BILLINSTORE
+		WHERE
+			BILLSERIAL_NO LIKE CONCAT(CONCAT('%',#{billserialNo}),'%')
+	</select>
+</mapper>

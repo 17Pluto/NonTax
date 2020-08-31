@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.RegionDao">
+	<select id="get" resultType="Region" parameterType="String">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME
+		FROM 
+			ELE_REGION
+		WHERE
+			IS_VALID=1 AND IS_TOP=1
+		<if test="setYear != null and setYear != '' ">
+			AND SET_YEAR = #{setYear}
+		</if>
+	</select>
+</mapper>

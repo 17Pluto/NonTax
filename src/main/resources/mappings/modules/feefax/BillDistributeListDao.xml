@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BillDistributeListDao">
+	<select id="get" resultType="BillDistributeList" parameterType="String">
+		SELECT
+			CHR_ID,MAIN_ID,UNTAX_BILLNAME_ID,UNTAX_BILLPRICE_ID,MEASURE,
+			MULS,PRICE,BGN_BILL_NO,END_BILL_NO,STORE_NUM,REMARK,IS_DELETED,
+			MONEY,BOOKNUM,LAST_VER,OCCUR_TIME,IS_USE_OVER,CANUSEDATE,IS_BILL_BACK,
+			SOURCE_ID
+		FROM
+			UNTAX_0_BILLDISTRIBUTE_LIST
+		WHERE
+			IS_DELETED=0
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+	</select>	
+	
+	<insert id="insert" parameterType="BillDistributeList" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BILLDISTRIBUTELIST_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_0_BILLDISTRIBUTE_LIST(CHR_ID,MAIN_ID,UNTAX_BILLNAME_ID,BGN_BILL_NO,END_BILL_NO,STORE_NUM,REMARK,IS_DELETED,
+			BOOKNUM,OCCUR_TIME,IS_BILL_BACK)
+		VALUES
+			(#{chrId},#{mainId},#{untaxBillnameId},#{bgnBillNo},#{endBillNo},#{storeNum},#{remark,jdbcType=VARCHAR},#{isDeleted},#{booknum},#{occurTime},
+				#{isBillBack}
+			)
+	</insert>
+
+	<delete id="delete" parameterType="BillDistributeList" >
+		UPDATE 
+			UNTAX_0_BILLDISTRIBUTE_LIST
+		SET 
+			IS_DELETED = '1'
+		<where>
+			<if test="mainId != null and mainId != '' ">
+				AND MAIN_ID=#{mainId}
+			</if>
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+		</where>
+	</delete>
+
+	<update id="update" parameterType="BillDistributeList">
+		UPDATE
+			UNTAX_0_BILLDISTRIBUTE_LIST
+		SET
+			CHR_ID=#{chrId},MAIN_ID=#{mainId},UNTAX_BILLNAME_ID=#{untaxBillnameId},UNTAX_BILLPRICE_ID=#{untaxBillpriceId},MEASURE=#{measure},MULS=#{muls},PRICE=#{price},
+				BGN_BILL_NO=#{bgnBillNo},END_BILL_NO=#{endBillNo},STORE_NUM=#{storeNum},REMARK=#{remark},IS_DELETED=#{isDeleted},MONEY=#{money},BOOKNUM=#{booknum},LAST_VER=#{lastVer},OCCUR_TIME=#{occurTime},IS_USE_OVER=#{isUseOver},
+				CANUSEDATE=#{canusedate},IS_BILL_BACK=#{isBillBack},SOURCE_ID=#{sourceId}
+	</update>
+		
+	<select id="getBillDistributeListListTotal" resultType="long" parameterType="BillDistributeList">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_0_BILLDISTRIBUTE_LIST
+		WHERE
+			IS_DELETED = '0'
+	</select>
+	
+	<select id="getBillDistributeListListByCondition" resultType="com.xcmis.feefax.modules.entity.BillDistributeList" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ub.* FROM (
+				SELECT
+					CHR_ID,MAIN_ID,UNTAX_BILLNAME_ID,UNTAX_BILLPRICE_ID,MEASURE,
+					MULS,PRICE,BGN_BILL_NO,END_BILL_NO,STORE_NUM,REMARK,IS_DELETED,
+					MONEY,BOOKNUM,LAST_VER,OCCUR_TIME,IS_USE_OVER,CANUSEDATE,IS_BILL_BACK,
+					SOURCE_ID
+				FROM
+					UNTAX_0_BILLDISTRIBUTE_LIST ub
+				WHERE
+					IS_DELETED=0
+		  ) ub where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ub
+		WHERE <![CDATA[ ub.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="BillDistributeList" parameterType="BillDistributeList">
+		SELECT
+			ubl.CHR_ID,ubl.MAIN_ID,ubl.UNTAX_BILLNAME_ID,ubl.UNTAX_BILLPRICE_ID,ubl.MEASURE,
+			ubl.MULS,PRICE,ubl.BGN_BILL_NO,ubl.END_BILL_NO,ubl.STORE_NUM,ubl.REMARK,ubl.IS_DELETED,
+			ubl.MONEY,ubl.BOOKNUM,ubl.LAST_VER,ubl.OCCUR_TIME,ubl.IS_USE_OVER,ubl.CANUSEDATE,ubl.IS_BILL_BACK,
+			ubl.SOURCE_ID,ub.CHR_NAME as untaxBillname
+		FROM
+			UNTAX_0_BILLDISTRIBUTE_LIST ubl, UNTAX_BILLNAME ub, UNTAX_0_BILLDISTRIBUTE ubd
+		WHERE
+			ubl.IS_DELETED = 0 and ubl.MAIN_ID = ubd.CHR_ID
+		<if test="mainId != null and mainId != '' ">
+			AND ubl.MAIN_ID = #{mainId}
+		</if>
+		<if test="enId != null and enId != '' ">
+			AND ubd.EN_ID = #{enId}
+		</if>
+			AND ubl.UNTAX_BILLNAME_ID = ub.CHR_ID
+		<if test="untaxBillnameId != null and untaxBillnameId != '' ">
+			AND ubl.UNTAX_BILLNAME_ID = #{untaxBillnameId}
+		</if>
+	</select>
+
+	<select id="getUntaxBillnameIdListByBilldistributer" resultType="BillDistributeList" parameterType="BillDistributeList">
+		SELECT
+			ubl.UNTAX_BILLNAME_ID as untaxBillnameId,ub.CHR_NAME as untaxBillname
+		FROM
+			UNTAX_0_BILLDISTRIBUTE_LIST ubl, UNTAX_BILLNAME ub, UNTAX_0_BILLDISTRIBUTE u0b
+		WHERE
+			ubl.IS_DELETED = 0 AND ubl.UNTAX_BILLNAME_ID = ub.CHR_ID AND u0b.IS_DELETED = 0 AND u0b.ISEND=1 AND u0b.BILLDISTRIBUTER like CONCAT(CONCAT('%',#{billdistributer}),'%') and u0b.CHR_ID = UBL.MAIN_ID
+		GROUP by ubl.UNTAX_BILLNAME_ID,ub.CHR_NAME
+	</select>
+
+</mapper>

@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.UntaxNosourceDao">
+	<select id="get" resultType="UntaxNosource" parameterType="UntaxNosource">
+		SELECT
+			CHR_ID,PAYER,PAYERBANK,PAYERACCOUNT,RECEIVERID,RECEIVER,RECEIVERBANK,RECEIVERACCOUNT,EVENTTIME,EVENTADDRESS,
+			PM_ID,CHECKMONEY,REMARK,TALLYTAG,IS_COLLECT,CREATE_USER,CREATE_DATE,BANK_NO,IS_SEND,LAST_VER,RG_CODE,SET_YEAR,
+			IS_END,EN_ID,EN_CODE,EN_NAME,IS_WF,CONFIRM,CHECKEARNE,ERASEFLAG,IS_CLAIM,T_BILL_NO,REMARK1,REMARK2,CONFIRMEND,
+			CHECKEARNEDATE,PAYCODE,PAYTRASEQNO,MEMO,RECACCTTYPE,DEPTRANO,BANKOUTLET,SOURCE_ID,BIND_EN_ID,IS_AUDIT,IS_PAY,
+			BATCHNO
+		FROM
+			UNTAX_NOSOURCE
+		WHERE
+			CHR_ID=#{chrId}
+	</select>	
+	
+	<insert id="insert" parameterType="UntaxNosource" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT NOSOURCE_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_NOSOURCE(CHR_ID,PAYER,PAYERBANK,PAYERACCOUNT,RECEIVERID,RECEIVER,RECEIVERBANK,RECEIVERACCOUNT,EVENTTIME,
+				CHECKMONEY,CREATE_DATE,LAST_VER,RG_CODE,SET_YEAR,BATCHNO,BANK_NO,EN_ID,IS_AUDIT,IS_CLAIM,PM_ID
+			)
+		VALUES
+			(#{chrId,jdbcType=VARCHAR},#{payer,jdbcType=VARCHAR},#{payerbank,jdbcType=VARCHAR},#{payeraccount,jdbcType=VARCHAR},#{receiverid,jdbcType=VARCHAR},#{receiver,jdbcType=VARCHAR},#{receiverbank,jdbcType=VARCHAR},#{receiveraccount,jdbcType=VARCHAR},#{eventtime,jdbcType=VARCHAR},
+				#{checkmoney},#{createDate,jdbcType=VARCHAR},#{lastVer,jdbcType=VARCHAR},#{rgCode,jdbcType=VARCHAR},#{setYear,jdbcType=VARCHAR},#{batchno,jdbcType=VARCHAR},#{bankNo,jdbcType=VARCHAR},#{enId,jdbcType=VARCHAR},#{isAudit},#{isClaim},#{pmId,jdbcType=VARCHAR}
+			)
+	</insert> 
+	
+	<delete id="delete" parameterType="UntaxNosource" >
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete>
+	
+	<update id="update" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			CHR_ID=#{chrId,jdbcType=VARCHAR},PAYER=#{payer,jdbcType=VARCHAR},PAYERBANK=#{payerbank,jdbcType=VARCHAR},PAYERACCOUNT=#{payeraccount,jdbcType=VARCHAR},RECEIVERID=#{receiverid,jdbcType=VARCHAR},RECEIVER=#{receiver,jdbcType=VARCHAR},RECEIVERBANK=#{receiverbank,jdbcType=VARCHAR},RECEIVERACCOUNT=#{receiveraccount,jdbcType=VARCHAR},EVENTTIME=#{eventtime,jdbcType=VARCHAR},EVENTADDRESS=#{eventaddress,jdbcType=VARCHAR},
+		    PM_ID=#{pmId,jdbcType=VARCHAR},CHECKMONEY=#{checkmoney},REMARK=#{remark,jdbcType=VARCHAR},TALLYTAG=#{tallytag},IS_COLLECT=#{isCollect},CREATE_USER=#{createUser,jdbcType=VARCHAR},IS_SEND=#{isSend},LAST_VER=#{lastVer,jdbcType=VARCHAR},RG_CODE=#{rgCode,jdbcType=VARCHAR},
+		    IS_END=#{isEnd},EN_ID=#{enId,jdbcType=VARCHAR},EN_CODE=#{enCode,jdbcType=VARCHAR},EN_NAME=#{enName,jdbcType=VARCHAR},IS_WF=#{isWf},CONFIRM=#{confirm},CHECKEARNE=#{checkearne},ERASEFLAG=#{eraseflag},T_BILL_NO=#{tBillNo,jdbcType=VARCHAR},REMARK1=#{remark1,jdbcType=VARCHAR},REMARK2=#{remark2,jdbcType=VARCHAR},
+		    CHECKEARNEDATE=#{checkearnedate,jdbcType=VARCHAR},PAYCODE=#{paycode,jdbcType=VARCHAR},PAYTRASEQNO=#{paytraseqno,jdbcType=VARCHAR},MEMO=#{memo,jdbcType=VARCHAR},RECACCTTYPE=#{recaccttype,jdbcType=VARCHAR},DEPTRANO=#{deptrano,jdbcType=VARCHAR},BANKOUTLET=#{bankoutlet,jdbcType=VARCHAR},SOURCE_ID=#{sourceId,jdbcType=VARCHAR},BIND_EN_ID=#{bindEnId,jdbcType=VARCHAR},IS_PAY=#{isPay},
+		    BANK_NO=#{bankNo,jdbcType=VARCHAR}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+    <!--	待查录入分页 -->
+	<select id="getUntaxNosourceListTotal" resultType="long" parameterType="UntaxNosource">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_NOSOURCE
+		WHERE
+			IS_DELETED = 0
+		<if test="stateCode == '001'">
+			AND IS_CLAIM = 0
+		</if>
+		<if test="stateCode == '002'">
+			AND IS_CLAIM = 1 AND STATE_CODE IS NULL
+		</if>
+		<if test="stateCode == '005'">
+			AND IS_CLAIM = 1 AND STATE_CODE = #{stateCode}
+		</if>
+		<if test="stateCode == '006'">
+			AND IS_CLAIM = 1 AND STATE_CODE = #{stateCode} AND IS_COLLECT = 0
+		</if>
+		<if test="stateCode == '008'">
+			AND IS_CLAIM = 1 AND IS_AUDIT = 1 AND IS_COLLECT = 0
+		</if>
+		<if test="stateCode == '902'">
+			AND IS_CLAIM = 1 AND IS_AUDIT = 1 AND IS_COLLECT = 1 AND CONFIRM = 0
+		</if>
+		<if test="payer != '' and payer != null">
+			AND PAYER=#{payer}
+		</if>
+		<if test="startEventtime != null and startEventtime != ''">
+			AND EVENTTIME &gt;= #{startEventtime}
+		</if>
+		<if test="endEventtime != null and endEventtime != ''">
+			AND EVENTTIME &lt;= #{endEventtime}
+		</if>
+		<if test="checkmoney != '' and checkmoney != null">
+			AND CHECKMONEY=#{checkmoney}
+		</if>
+		<if test="receiveraccount != null and receiveraccount != ''">
+			AND RECEIVERACCOUNT = #{receiveraccount}
+		</if>
+		<!--
+		<if test="enIds == null">
+			AND EN_ID is null
+		</if>
+		-->
+		<if test="enIds != null">
+			and EN_ID IN
+			<foreach collection="enIds" item="enId" open="(" separator=","  close=")">
+				#{enId}
+			</foreach>
+		</if>
+		<if test="bankNo != '' and bankNo != null">
+			AND BANK_NO=#{bankNo}
+		</if>
+		<if test="receiverid != null and receiverid != ''">
+			AND RECEIVERID = #{receiverid}
+		</if>
+		<if test="stateCode == '903'">
+			AND CONFIRM = 1 AND CHECKEARNE=0
+		</if>
+		<if test="stateCode == '905'">
+			AND IS_AUDIT = 1 AND CHECKEARNE=1
+		</if>
+	</select>
+
+	<select id="getUntaxNosourceForPrint" resultType="UntaxNosource" parameterType="String">
+		SELECT
+			un.EVENTTIME,un.DEPTRANO,un.RECEIVER,un.RECEIVERBANK,un.RECEIVERACCOUNT,un.REMARK,un.CHECKMONEY,eie.CHR_CODE as enCode,eie.CHR_NAME as enName,un.PAYER,uc.BILL_NO as billNo,
+			CASE WHEN uc.RECEIVETYPE = 1 THEN( SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTIONDETAIL ucd WHERE ucd.main_id = uc.CHR_ID)
+					ELSE(SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTION_GATHER_DETAIL WHERE main_id IN (SELECT CHR_ID FROM UNTAX_COLLECTION_GATHER WHERE COLLECT_ID = uc.CHR_ID))
+				END chargemoney,
+			CASE WHEN uc.BILL_NAME is null then ub.CHR_NAME
+					ELSE uc.BILL_NAME
+				END billName,
+			un.BATCHNO,un.BANK_NO,uc.REQ_BILL_NO
+		FROM
+			UNTAX_NOSOURCE un,ELE_INCOME_ENTERPRISE eie,UNTAX_COLLECTION uc,UNTAX_BILLNAME ub
+		WHERE
+			un.IS_DELETED = 0
+			AND uc.BILLTYPE_ID = ub.CHR_ID
+			AND eie.EN_ID=un.EN_ID
+			AND un.CHR_ID = #{chrId}
+			AND uc.NOSOURCE_IDS LIKE CONCAT(CONCAT('%',#{chrId}),'%')
+	</select>
+
+
+	<select id="getUntaxNosourceListByCondition" resultType="UntaxNosource" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, eu.* FROM (
+				SELECT
+					eu.CHR_ID,eu.PAYER,eu.PAYERBANK,eu.PAYERACCOUNT,eu.RECEIVERID,eu.RECEIVER,eu.RECEIVERBANK,eu.RECEIVERACCOUNT,eu.EVENTTIME,eu.EVENTADDRESS,
+					eu.PM_ID,eu.CHECKMONEY,eu.REMARK,eu.TALLYTAG,eu.IS_COLLECT,eu.CREATE_USER,eu.CREATE_DATE,eu.BANK_NO,eu.IS_SEND,eu.LAST_VER,eu.RG_CODE,eu.SET_YEAR,
+					eu.IS_END,eu.EN_ID,eu.EN_CODE,eu.IS_WF,eu.CONFIRM,eu.CHECKEARNE,eu.ERASEFLAG,eu.IS_CLAIM,eu.T_BILL_NO,eu.REMARK1,eu.REMARK2,eu.CONFIRMEND,
+					eu.CHECKEARNEDATE,eu.PAYCODE,eu.PAYTRASEQNO,eu.MEMO,eu.RECACCTTYPE,eu.DEPTRANO,eu.BANKOUTLET,eu.SOURCE_ID,eu.BIND_EN_ID,eu.IS_AUDIT,eu.IS_PAY,eu.STATE_CODE,
+					ee.CHR_NAME as EN_NAME, eu.BATCHNO as batchno
+					<if test="untaxNosource.stateCode == '902' or untaxNosource.stateCode == '903' or untaxNosource.stateCode == '905'">
+						,wm_concat(uc.CHR_ID) as collectionId,WM_CONCAT(uc.BILL_NO) as billNo
+					</if>
+				FROM
+					UNTAX_NOSOURCE eu,ELE_ENTERPRISE ee,UNTAX_NOSOURCE_COLLECTION unc
+				<if test="untaxNosource.stateCode == '902' or untaxNosource.stateCode == '903' or untaxNosource.stateCode == '905'">
+					,UNTAX_COLLECTION uc
+				</if>
+				WHERE
+					eu.IS_DELETED = 0 AND eu.EN_ID = ee.CHR_ID(+) AND eu.CHR_ID = unc.NOSOURCE_ID(+)
+				<if test="untaxNosource.stateCode == '001'">
+					AND eu.IS_CLAIM = 0
+				</if>
+				<if test="untaxNosource.stateCode == '002'">
+					AND eu.IS_CLAIM = 1 AND eu.STATE_CODE IS NULL
+				</if>
+				<if test="untaxNosource.stateCode == '005'">
+					AND eu.IS_CLAIM = 1 AND eu.STATE_CODE = #{untaxNosource.stateCode}
+				</if>
+				<if test="untaxNosource.stateCode == '006'">
+					AND eu.IS_CLAIM = 1 AND eu.STATE_CODE = #{untaxNosource.stateCode} AND eu.IS_COLLECT = 0
+				</if>
+				<if test="untaxNosource.stateCode == '008'">
+					AND eu.IS_CLAIM = 1 AND eu.IS_AUDIT = 1  AND eu.IS_COLLECT = 0
+				</if>
+				<if test="untaxNosource.stateCode == '902'">
+					AND eu.IS_CLAIM = 1 AND eu.IS_AUDIT = 1 AND eu.IS_COLLECT = 1 AND eu.CONFIRM = 0 AND uc.CHR_ID = unc.COLLECTION_ID
+				</if>
+				<if test="untaxNosource.checkmoney != '' and untaxNosource.checkmoney != null">
+					AND eu.CHECKMONEY=#{untaxNosource.checkmoney}
+				</if>
+				<if test="untaxNosource.payer != '' and untaxNosource.payer != null">
+					AND eu.PAYER LIKE CONCAT(CONCAT('%',#{untaxNosource.payer}),'%')
+				</if>
+				<if test="untaxNosource.receiverid != '' and untaxNosource.receiverid != null">
+					AND eu.RECEIVERID=#{untaxNosource.receiverid}
+				</if>
+				<!--
+				<if test="untaxNosource.enIds == null">
+					AND eu.EN_ID is null
+				</if>
+				-->
+				<if test="untaxNosource.enIds != null">
+					AND eu.EN_ID in
+					<foreach collection="untaxNosource.enIds" item="enId" open="(" separator=","  close=")">
+						#{enId}
+					</foreach>
+				</if>
+				<if test="untaxNosource.startEventtime != null and untaxNosource.startEventtime != ''">
+					AND eu.EVENTTIME &gt;= #{untaxNosource.startEventtime}
+				</if>
+				<if test="untaxNosource.endEventtime != null and untaxNosource.endEventtime != ''">
+					AND eu.EVENTTIME &lt;= #{untaxNosource.endEventtime}
+				</if>
+				<if test="untaxNosource.receiveraccount != null and untaxNosource.receiveraccount != ''">
+					AND eu.RECEIVERACCOUNT LIKE CONCAT(CONCAT('%',#{untaxNosource.receiveraccount}),'%')
+				</if>
+				<if test="untaxNosource.bankNo != '' and untaxNosource.bankNo != null">
+					AND eu.BANK_NO=#{untaxNosource.bankNo}
+				</if>
+				<if test="untaxNosource.stateCode == '903'">
+					AND eu.CONFIRM = 1 AND uc.CHR_ID = unc.COLLECTION_ID AND eu.CHECKEARNE=0
+				</if>
+				<if test="untaxNosource.stateCode == '905'">
+					AND eu.IS_AUDIT = 1 AND uc.CHR_ID = unc.COLLECTION_ID AND eu.CHECKEARNE=1
+				</if>
+				<if test="untaxNosource.stateCode == '902' or untaxNosource.stateCode == '903' or untaxNosource.stateCode == '905'">
+					GROUP BY
+						eu.CHR_ID,eu.PAYER,eu.PAYERBANK,eu.PAYERACCOUNT,eu.RECEIVERID,eu.RECEIVER,eu.RECEIVERBANK,
+						eu.RECEIVERACCOUNT,eu.EVENTTIME,eu.EVENTADDRESS,eu.PM_ID,eu.CHECKMONEY,eu.REMARK,eu.TALLYTAG,
+						eu.IS_COLLECT,eu.CREATE_USER,eu.CREATE_DATE,eu.BANK_NO,eu.IS_SEND,eu.LAST_VER,eu.RG_CODE,eu.SET_YEAR,
+						eu.IS_END,eu.EN_ID,eu.EN_CODE,eu.IS_WF,eu.CONFIRM,eu.CHECKEARNE,eu.ERASEFLAG,eu.IS_CLAIM,
+						eu.T_BILL_NO,eu.REMARK1,eu.REMARK2,eu.CONFIRMEND,eu.CHECKEARNEDATE,eu.PAYCODE,eu.PAYTRASEQNO,
+						eu.MEMO,eu.RECACCTTYPE,eu.DEPTRANO,eu.BANKOUTLET,eu.SOURCE_ID,eu.BIND_EN_ID,eu.IS_AUDIT,
+						eu.IS_PAY,eu.STATE_CODE,ee.CHR_NAME,eu.BATCHNO
+					ORDER BY eu.LAST_VER DESC
+				</if>
+				<if test="untaxNosource.stateCode != '902' and untaxNosource.stateCode == '903' and untaxNosource.stateCode == '905'">
+					ORDER BY eu.EVENTTIME DESC
+				</if>
+			) eu where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) eu
+		WHERE <![CDATA[ eu.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="UntaxNosource" parameterType="UntaxNosource">
+		SELECT
+			CHR_ID,PAYER,PAYERBANK,PAYERACCOUNT,RECEIVERID,RECEIVER,RECEIVERBANK,RECEIVERACCOUNT,EVENTTIME,EVENTADDRESS,
+			PM_ID,CHECKMONEY,REMARK,TALLYTAG,IS_COLLECT,CREATE_USER,CREATE_DATE,BANK_NO,IS_SEND,LAST_VER,RG_CODE,SET_YEAR,
+			IS_END,EN_ID,EN_CODE,EN_NAME,IS_WF,CONFIRM,CHECKEARNE,ERASEFLAG,IS_CLAIM,T_BILL_NO,REMARK1,REMARK2,CONFIRMEND,
+			CHECKEARNEDATE,PAYCODE,PAYTRASEQNO,MEMO,RECACCTTYPE,DEPTRANO,BANKOUTLET,SOURCE_ID,BIND_EN_ID,IS_AUDIT,IS_PAY
+		FROM
+			UNTAX_NOSOURCE
+	</select>
+
+	<update id="editIsClaimDo" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_CLAIM = '1',EN_ID = #{enId},REMARK1 = #{remark1}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="cancelIsClaim" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_CLAIM = '0' , EN_ID = ''
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+
+	<update id="updateConfirm" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			CONFIRM=1
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+
+	<update id="changeStateCode" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			STATE_CODE = '005'
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="cancelStateCode" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			STATE_CODE = '002'
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="editIsAuditDo" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_AUDIT = 1, STATE_CODE = '006'
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="cancelAudit" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_AUDIT = '0',STATE_CODE = '005'
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<select id="getCollections" resultType="Collections" parameterType="java.util.HashMap">
+		SELECT
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, eu.* FROM (
+				SELECT
+					uc.CHR_ID as chrId,uc.BILL_NO as billNo,uc.BILLTYPE_ID as billtypeId, ub.CHR_NAME as
+					billName,UC.EN_ID as enId,EIE.CHR_NAME as enName,uc.PAYER as payer,
+					CASE WHEN uc.RECEIVETYPE = 1 THEN( SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTIONDETAIL ucd WHERE ucd.main_id = uc.CHR_ID)
+					ELSE(SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTION_GATHER_DETAIL WHERE main_id IN (SELECT CHR_ID FROM UNTAX_COLLECTION_GATHER WHERE COLLECT_ID = uc.CHR_ID))
+					END chargemoney,uc.PRINTFLAG, eie1.CHR_NAME as consigneeEnName
+				FROM
+					UNTAX_COLLECTION uc,UNTAX_BILLNAME ub,ELE_INCOME_ENTERPRISE eie,ELE_INCOME_ENTERPRISE eie1
+				WHERE
+					uc.IS_DELETED=0 AND uc.BILLTYPE_ID = ub.CHR_ID AND UC.EN_ID = EIE.CHR_ID AND uc.PRINTFLAG = 1 AND
+					uc.PAYFLAG = 0 AND  uc.ERASEFLAG=0 AND UC.CONSIGNEE_EN_ID = eie1.CHR_ID(+)
+					<if test="collections.billtypeId != null and collections.billtypeId != ''">
+						AND uc.BILLTYPE_ID = #{collections.billtypeId}
+					</if>
+					<if test="collections.billNo != null and collections.billNo != ''">
+						AND uc.BILL_NO = #{collections.billNo}
+					</if>
+					<if test="collections.payer != null and collections.payer != ''">
+						AND uc.PAYER = #{collections.payer}
+					</if>
+					<if test="collections.receiverid != null and collections.receiverid != ''">
+						AND uc.RECEIVERID = #{collections.receiverid}
+					</if>
+					<if test="collections.isconsign == 1">
+						AND uc.CONSIGNEE_EN_ID = #{collections.consigneeEnId} AND uc.EN_ID = #{collections.enId}
+					</if>
+					<if test="collections.isconsign == ''">
+						AND uc.EN_ID = #{collections.enId}
+					</if>
+					AND INSTR(uc.NOSOURCE_IDS,#{collections.chrId}) IS NULL
+					ORDER BY uc.CREATE_DATE DESC
+			) eu where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) eu
+		WHERE <![CDATA[ eu.rowno > #{startrow} ]]>
+	</select>
+
+	<select id="getCollectionsListTotal" resultType="long" parameterType="Collections">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_COLLECTION
+		WHERE
+			IS_DELETED = 0 AND PRINTFLAG = 1 AND PAYFLAG = 0 AND ERASEFLAG=0
+		<if test="billtypeId != null and billtypeId != ''">
+			AND BILLTYPE_ID = #{billtypeId}
+		</if>
+		<if test="billNo != null and billNo != ''">
+			AND BILL_NO = #{billNo}
+		</if>
+		<if test="payer != null and payer != ''">
+			AND PAYER = #{payer}
+		</if>
+		<if test="receiverid != null and receiverid != ''">
+			AND RECEIVERID = #{receiverid}
+		</if>
+		<if test="isconsign == 1">
+			AND CONSIGNEE_EN_ID = #{consigneeEnId} AND EN_ID = #{enId}
+		</if>
+		<if test="isconsign == ''">
+			AND EN_ID = #{enId}
+		</if>
+		AND INSTR(NOSOURCE_IDS,#{chrId}) IS NULL
+	</select>
+
+	<select id="checkIsRepeat" resultType="long" parameterType="UntaxNosourceCollection">
+		SELECT
+			COUNT(NOSOURCE_ID) AS num
+		FROM
+			UNTAX_NOSOURCE_COLLECTION
+		WHERE
+			NOSOURCE_ID = #{nosourceId} AND COLLECTION_ID = #{collectionId}
+	</select>
+
+	<update id="bindingIsCollect" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			NOSOURCE_IDS = #{nosourceIds}
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+
+	<update id="bindingIsCollectInNosource" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_COLLECT = 1, LAST_VER=#{lastVer}
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+
+	<update id="bindingNosourceInCollection" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			NOSOURCE_IDS = #{nosourceIds}
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+
+	<select id="getUserNamebyId" resultType="String" parameterType="String">
+		SELECT
+			USER_NAME
+		FROM
+			SYS_USERMANAGE
+		WHERE
+			USER_ID = #{userId}
+	</select>
+
+	<!-- 清除状态位	-->
+	<update id="recallIsCollectInNosource" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			IS_COLLECT = 0
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+
+	<!-- 清除collections中的绑定关系	-->
+	<update id="recallCollectionIds" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			NOSOURCE_IDS = ''
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+
+
+	<update id="updateBindingTime" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			CREATE_USER=#{createUser},CREATE_DATE=#{createDate}
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+
+	<!-- 清除nosourcecollections中的绑定关系	-->
+	<delete id="recallNosourceIds" parameterType="UntaxNosource">
+		DELETE FROM
+			UNTAX_NOSOURCE_COLLECTION
+		WHERE
+			NOSOURCE_ID = #{chrId}
+	</delete>
+
+	<!-- 将关联关系重新写入-->
+	<update id="updateNosourceIds" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			 NOSOURCE_IDS = (SELECT wm_concat(NOSOURCE_ID) FROM UNTAX_NOSOURCE_COLLECTION WHERE COLLECTION_ID = #{chrId}
+								GROUP BY COLLECTION_ID)
+		WHERE
+			CHR_ID = #{chrId}
+	</update>
+
+	<!-- 更新核收状态api-->
+	<update id="updateCheckEarne" parameterType="UntaxNosource">
+		UPDATE
+			UNTAX_NOSOURCE
+		SET
+			CHECKEARNE=#{checkearne},CHECKEARNEDATE=#{checkearnedate},IS_AUDIT=#{isAudit}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+</mapper>

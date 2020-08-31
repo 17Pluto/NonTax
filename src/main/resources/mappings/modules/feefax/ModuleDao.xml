@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.ModuleDao">
+	<select id="get" resultType="Module" parameterType="Module">
+		SELECT
+			MODULE_ID,MODULE_CODE,MODULE_NAME,SYS_ID,MODULE_TYPE
+		FROM 
+			SYS_MODULE
+		WHERE
+			ENABLED=1 AND MODULE_ID=#{moduleId}
+	</select>
+	
+	<select id="findAllList" resultType="Module" parameterType="Module">
+		SELECT
+			sm.MODULE_ID as moduleId,sm.MODULE_CODE as moduleCode,sm.MODULE_NAME as moduleName,sm.SYS_ID as sysId,
+			sm.MODULE_TYPE as moduleType
+		FROM
+			SYS_MODULE sm
+		WHERE
+			sm.ENABLED = 1
+		<if test="sysId != null and sysId != '' ">
+			AND sm.SYS_ID=#{sysId}
+		</if>
+		ORDER BY sm.MODULE_ID ASC
+	</select>
+
+
+
+	<insert id="insert" parameterType="Module" >
+		<selectKey resultType="Long" order="BEFORE" keyProperty="moduleId">
+			SELECT MODULE_S.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO
+			SYS_MODULE(MODULE_ID,MODULE_CODE,MODULE_NAME,SYS_ID,MODULE_TYPE,ENABLED,LAST_VER)
+		VALUES
+			(#{moduleId},#{moduleCode},#{moduleName},#{sysId},#{moduleType},#{enabled},#{lastVer})
+	</insert>
+
+	<delete id="delete" parameterType="Module" >
+		DELETE FROM
+			SYS_MODULE
+		WHERE
+			MODULE_ID=#{moduleId}
+	</delete>
+
+	<update id="update" parameterType="Module">
+		UPDATE
+			SYS_MODULE
+		<set>
+			MODULE_CODE=#{moduleCode},
+			MODULE_NAME=#{moduleName},
+			SYS_ID=#{sysId},
+			MODULE_TYPE=#{moduleType},
+			LAST_VER=#{lastVer},
+		</set>
+		WHERE
+			MODULE_ID=#{moduleId}
+	</update>
+</mapper>

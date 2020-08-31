@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.IncomeBankAccountDao">
+	<select id="get" resultType="IncomeBankAccount" parameterType="String">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,
+ 			IS_DELETED,LATEST_OP_USER,LAST_VER,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,RG_CODE,ACCOUNT_NO,
+			ACCOUNT_NAME,BANK_ID,BANK_CODE,BANK_NAME,ACCOUNT_TYPE,OWNER_CODE,OWNER_NAME,PARENT_ID,CHR_ID1,CHR_ID2,CHR_ID3,CHR_ID4,
+ 			CHR_ID5,START_DATE,STOP_DATE,BANK_NO
+		FROM 
+			VW_INCOMEBANKACCOUNT
+		WHERE
+			IS_DELETED=0
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+			<if test="chrCode != null and chrCode != '' ">
+				AND CHR_CODE=#{chrCode}
+			</if>
+	</select>
+	
+	<insert id="insert" parameterType="IncomeBankAccount" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BANKACCOUNT_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			ELE_ACCOUNT(SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,
+				IS_LEAF,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,
+				LATEST_OP_USER,LAST_VER,PARENT_ID,RG_CODE,ENABLED,PARENT_NAME,ACCOUNT_NO,ACCOUNT_NAME,BANK_CODE,ACCOUNT_TYPE)
+		VALUES
+			(#{setYear},#{chrId},#{chrCode},#{dispCode},#{chrName},#{levelNum},
+				#{isLeaf},#{createDate},#{createUser},#{latestOpDate},
+				#{latestOpUser},#{lastVer},#{parentId},#{rgCode},#{enabled},#{parentName},#{accountNo},#{accountName},
+                #{bankCode},#{accountType})
+	</insert> 
+
+	<delete id="delete" parameterType="IncomeBankAccount" >
+		UPDATE 
+			ELE_ACCOUNT
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete> 
+	
+	<update id="update" parameterType="IncomeBankAccount">
+		UPDATE
+            ELE_ACCOUNT
+		<set>
+			<if test="setYear != null and setYear != '' ">
+				SET_YEAR=#{setYear},
+			</if>
+			<if test="chrCode != null and chrCode != '' ">
+				CHR_CODE=#{chrCode},
+			</if>
+			<if test="dispCode != null and dispCode != '' ">
+				DISP_CODE=#{dispCode},
+			</if>
+			<if test="chrName != null and chrName != '' ">
+				CHR_NAME=#{chrName},
+			</if>
+			<if test="levelNum != null and levelNum != '' ">
+				LEVEL_NUM=#{levelNum},
+			</if>
+			<if test="parentId != null and parentId != '' ">
+				PARENT_ID=#{parentId},
+			</if>
+			<if test="parentName != null and parentName != '' ">
+				PARENT_NAME=#{parentName},
+			</if>
+            <if test="accountNo != null and accountNo != '' ">
+                ACCOUNT_NO=#{accountNo},
+            </if>
+            <if test="accountName != null and accountName != '' ">
+                ACCOUNT_NAME=#{accountName},
+            </if>
+            <if test="bankCode != null and bankCode != '' ">
+                BANK_CODE=#{bankCode},
+            </if>
+            <if test="ownerCode != null and ownerCode != '' ">
+                OWNER_CODE=#{ownerCode},
+            </if>
+            <if test="startDate != null and startDate != '' ">
+                START_DATE=#{startDate},
+            </if>
+            <if test="stopDate != null and stopDate != '' ">
+                STOP_DATE=#{stopDate},
+            </if>
+			ENABLED=#{enabled},
+		</set>
+		WHERE 
+			CHR_ID=#{chrId}
+	</update>
+	
+	
+		
+	<select id="getIncomeBankAccountListTotal" resultType="long" parameterType="IncomeBankAccount">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+            VW_INCOMEBANKACCOUNT
+		WHERE
+			IS_DELETED = '0'
+        <if test="setYear != null and setYear != '' ">
+            AND SET_YEAR = #{setYear}
+        </if>
+		<if test="chrId != null and chrId != '' ">
+			start with CHR_ID = #{chrId} connect by prior CHR_ID = PARENT_ID
+		</if>
+	</select>
+	
+	<select id="getIncomeBankAccountListByCondition" resultType="IncomeBankAccount" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, vui.* FROM (
+				SELECT
+					vui.CHR_ID as chrId,vui.CHR_CODE as chrCode,vui.DISP_CODE as dispCode,vui.CHR_NAME as chrName,vui.LEVEL_NUM as levelNum,vui.ENABLED as enabled,vui.IS_DELETED as isDeleted,
+					vui.IS_LEAF as isLeaf, vui.ACCOUNT_NO as accountNo,vui.ACCOUNT_NAME as accountName,vui.BANK_ID as bankId,vui.BANK_CODE as bankCode,vui.BANK_NAME as bankName,
+					vui.ACCOUNT_TYPE, nvl(vui1.CHR_NAME, '全部') as parentName, nvl(vui.PARENT_ID, 'allTree') as parentId
+				FROM
+                    VW_INCOMEBANKACCOUNT vui,VW_INCOMEBANKACCOUNT vui1
+    			WHERE
+					vui.IS_DELETED = '0' and vui.PARENT_ID = vui1.CHR_ID(+)
+                    <if test="incomeBankAccount.setYear != null and incomeBankAccount.setYear != '' ">
+                        AND vui.SET_YEAR = #{incomeBankAccount.setYear}
+                    </if>
+					<if test="incomeBankAccount.chrId != null and incomeBankAccount.chrId != '' ">
+						start with vui.CHR_ID = #{incomeBankAccount.chrId} connect by prior vui.CHR_ID = vui.PARENT_ID
+					</if>
+				<choose>
+					<when test="sort !=null and sort != ''">				
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY vui.DISP_CODE ASC
+					</otherwise>
+				</choose>    				
+		  ) vui where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) vui
+		WHERE <![CDATA[ vui.rowno > #{startrow} ]]>
+		
+	</select>
+	
+	<select id="findAllList" resultType="IncomeBankAccount" parameterType="IncomeBankAccount">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,
+			IS_DELETED,LATEST_OP_USER,LAST_VER,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,RG_CODE,ACCOUNT_NO,
+			ACCOUNT_NAME,BANK_ID,BANK_CODE,BANK_NAME,ACCOUNT_TYPE,OWNER_CODE,OWNER_NAME,PARENT_ID,CHR_ID1,CHR_ID2,CHR_ID3,CHR_ID4,
+			CHR_ID5,START_DATE,STOP_DATE
+		FROM
+			VW_INCOMEBANKACCOUNT
+		WHERE
+			IS_DELETED = '0'
+        <if test="setYear != null and setYear != '' ">
+			AND SET_YEAR = #{setYear}
+        </if>
+		<if test="chrId != null and chrId != '' ">
+			AND CHR_ID=#{chrId}
+		</if>
+		<if test="parentId != null and parentId != '' ">
+			AND PARENT_ID=#{parentId}
+		</if>
+		<if test="bankId != null and bankId != '' ">
+			AND BANK_ID=#{bankId}
+		</if>
+		ORDER BY DISP_CODE ASC
+	</select>
+</mapper>

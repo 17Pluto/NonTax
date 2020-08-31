@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BillNameDao">
+	<select id="get" resultType="BillName" parameterType="String">
+		SELECT
+			ub.CHR_ID as chrId, ub.CHR_CODE as chrCode,ub.DISP_CODE as dispCode,ub.CHR_NAME as chrName,ub.LEVEL_NUM as levelNum,ub.ENABLED as enabled,
+			ub.IS_DELETED as isDeleted,ub.IS_LEAF as isLeaf, ub.PARENT_ID as parentId, ub.PARENT_NAME as parentName,eb.CHR_NAME as billKind,
+			ub.BILLKIND_ID as billKindId, ub.UNIT_COUPLET as unitCouplet, ub.DIRECT as direct,ub.USAGE_WAY as usageWay,ub.BILL_LENGTH as billLength,
+			ub.STOCK_LOWER as stockLower, ub.INFOROWS as inforows,ub.RATION as ration,ub.REPORT_ID as reportId,ub.END_DATE as endDate,
+			ub.PACKNUM as packnum, ub.CANUSEMONTHS as canusemonths, ub.ISNOTICE as isnotice, ub.BILL_RULE as billRule, ub.REMARK as remark
+		FROM
+			UNTAX_BILLNAME ub, ELE_BILLKIND eb
+		WHERE
+			ub.IS_DELETED=0 AND ub.BILLKIND_ID=eb.CHR_ID(+)
+			<if test="chrId != null and chrId != '' ">
+				AND ub.CHR_ID=#{chrId}
+			</if>
+			<if test="chrCode != null and chrCode != '' ">
+				AND ub.CHR_CODE=#{chrCode}
+			</if>
+	</select>	
+	
+	<insert id="insert" parameterType="BillName" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BILLNAME_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_BILLNAME(SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,
+				IS_LEAF,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,
+				LATEST_OP_USER,LAST_VER,RG_CODE,ENABLED,
+				BILLKIND,BILLKIND_ID,UNIT_NUMBER,UNIT_COUPLET,DIRECT,USAGE_WAY,BILL_VALUE,BILL_LENGTH,
+				VERIFY_LENGTH,STOCK_UPPER,STOCK_LOWER,INFOROWS,RATION,REPORT_ID,
+				END_DATE,PACKNUM,CANUSEMONTHS,ISNOTICE,BILL_RULE,REMARK
+				)
+		VALUES
+			(#{setYear},#{chrId},#{chrCode},#{dispCode},#{chrName},#{levelNum},
+				#{isLeaf},#{createDate},#{createUser},#{latestOpDate},
+				#{latestOpUser},#{lastVer},#{rgCode},#{enabled},
+				#{billKind},#{billKindId},#{unitNumber},#{unitCouplet},#{direct},#{usageWay},#{billValue},#{billLength},
+				#{verifyLength},#{stockUpper},#{stockLower},#{inforows},#{ration},#{reportId},
+				#{endDate},#{packnum},#{canusemonths},#{isnotice},#{billRule},#{remark}
+			)
+	</insert> 
+	
+	<delete id="delete" parameterType="BillName" >
+		UPDATE 
+			UNTAX_BILLNAME
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete>
+
+
+
+	
+	<update id="update" parameterType="BillName">
+		UPDATE
+			UNTAX_BILLNAME
+		<set>
+			<if test="setYear != null and setYear != '' ">
+				SET_YEAR=#{setYear},
+			</if>
+			<if test="chrCode != null and chrCode != '' ">
+				CHR_CODE=#{chrCode},
+			</if>
+			<if test="dispCode != null and dispCode != '' ">
+				DISP_CODE=#{dispCode},
+			</if>
+			<if test="chrName != null and chrName != '' ">
+				CHR_NAME=#{chrName},
+			</if>
+			<if test="levelNum != null and levelNum != '' ">
+				LEVEL_NUM=#{levelNum},
+			</if>
+			<if test="parentId != null and parentId != '' ">
+				PARENT_ID=#{parentId},
+			</if>
+			<if test="parentName != null and parentName != '' ">
+				PARENT_NAME=#{parentName},
+			</if>
+			<if test="billKindId != null and billKindId != '' ">
+				BILLKIND_ID=#{billKindId},
+			</if>
+			<if test="billKind != null and billKind != '' ">
+				BILLKIND=#{billKind},
+			</if>
+			<if test="billValue != null and billValue != '' ">
+				BILL_VALUE=#{billValue},
+			</if>
+			<if test="unitCouplet != null and unitCouplet != '' ">
+				UNIT_COUPLET=#{unitCouplet},
+			</if>
+			<if test="direct != null and direct != '' ">
+				DIRECT=#{direct},
+			</if>
+			<if test="usageWay != null and usageWay != '' ">
+				USAGE_WAY=#{usageWay},
+			</if>
+			<if test="billLength != null and billLength != '' ">
+				BILL_LENGTH=#{billLength},
+			</if>
+			<if test="stockLower != null and stockLower != '' ">
+				STOCK_LOWER=#{stockLower},
+			</if>
+			<if test="inforows != null and inforows != '' ">
+				INFOROWS=#{inforows},
+			</if>
+			<if test="ration != null and ration != '' ">
+				RATION=#{ration},
+			</if>
+			<if test="reportId != null and reportId != '' ">
+				REPORT_ID=#{reportId},
+			</if>
+			<if test="endDate != null and endDate != '' ">
+				END_DATE=#{endDate},
+			</if>
+			<if test="packnum != null and packnum != '' ">
+				PACKNUM=#{packnum},
+			</if>
+			<if test="canusemonths != null and canusemonths != '' ">
+				CANUSEMONTHS=#{inforows},
+			</if>
+			<if test="billRule != null and billRule != '' ">
+				BILL_RULE=#{billRule},
+			</if>
+			ISNOTICE=#{isnotice},
+			ENABLED=#{enabled},
+		</set>
+		WHERE 
+			CHR_ID=#{chrId}
+	</update>
+	
+	
+		
+	<select id="getBillNameListTotal" resultType="long" parameterType="BillName">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_BILLNAME
+		WHERE
+			IS_DELETED = '0'
+        <if test="setYear != null and setYear != '' ">
+            AND SET_YEAR = #{setYear}
+        </if>
+		<if test="chrName != null and chrName != '' ">
+			AND CHR_NAME LIKE CONCAT(CONCAT('%',#{chrName}),'%')
+		</if>
+		<if test="usageWay != null and usageWay != '' ">
+			AND USAGE_WAY = #{usageWay}
+		</if>
+		<if test="billKindId != null and billKindId != '' ">
+			AND BILLKIND_ID = #{billKindId}
+		</if>
+		<if test="chrId != null and chrId != '' ">
+			start with CHR_ID = #{chrId} connect by prior CHR_ID = PARENT_ID
+		</if>
+	</select>
+	
+	<select id="getBillNameListByCondition" resultType="BillName" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ebk.* FROM (
+					SELECT
+						ub.CHR_ID as chrId, ub.CHR_CODE as chrCode,ub.DISP_CODE as dispCode,ub.CHR_NAME as chrName,ub.LEVEL_NUM as levelNum,ub.ENABLED as enabled,
+						ub.IS_DELETED as isDeleted,ub.IS_LEAF as isLeaf, ub.PARENT_ID as parentId, ub.PARENT_NAME as parentName,eb.CHR_NAME as billKind,
+						ub.BILLKIND_ID as billKindId, ub.UNIT_COUPLET as unitCouplet, ub.DIRECT as direct,ub.USAGE_WAY as usageWay,ub.BILL_LENGTH as billLength,
+						ub.STOCK_LOWER as stockLower, ub.INFOROWS as inforows,ub.RATION as ration,ub.REPORT_ID as reportId,ub.END_DATE as endDate,
+						ub.PACKNUM as packnum, ub.CANUSEMONTHS as canusemonths, ub.ISNOTICE as isnotice, ub.BILL_RULE as billRule, ub.REMARK as remark
+					FROM
+						UNTAX_BILLNAME ub, ELE_BILLKIND eb
+					WHERE
+						ub.IS_DELETED=0 AND ub.BILLKIND_ID=eb.CHR_ID(+)
+                    <if test="billName.setYear != null and billName.setYear != '' ">
+                        AND ub.SET_YEAR = #{billName.setYear}
+                    </if>
+		            <if test="billName.chrId != null and billName.chrId != '' ">
+						start with ub.CHR_ID = #{billName.chrId} connect by prior ub.CHR_ID = ub.PARENT_ID
+					</if>
+					<if test="billName.chrName != null and billName.chrName != '' ">
+						AND ub.CHR_NAME LIKE CONCAT(CONCAT('%',#{billName.chrName}),'%')
+					</if>
+					<if test="billName.usageWay != null and billName.usageWay != '' ">
+						AND ub.USAGE_WAY = #{billName.usageWay}
+					</if>
+					<if test="billName.billKindId != null and billName.billKindId != '' ">
+						AND ub.BILLKIND_ID = #{billName.billKindId}
+					</if>
+				<choose>
+					<when test="sort !=null and sort != ''">
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY ub.DISP_CODE ASC
+					</otherwise>
+				</choose>    				
+		  ) ebk where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ebk
+		WHERE <![CDATA[ ebk.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="BillName" parameterType="BillName">
+		SELECT
+			ub.CHR_ID as chrId, ub.CHR_CODE as chrCode,ub.DISP_CODE as dispCode,ub.CHR_NAME as chrName,ub.LEVEL_NUM as levelNum,ub.ENABLED as enabled,
+			ub.IS_DELETED as isDeleted,ub.IS_LEAF as isLeaf, ub.PARENT_ID as parentId, ub.PARENT_NAME as parentName,eb.CHR_NAME as billKind,
+			ub.BILLKIND_ID as billKindId, ub.UNIT_COUPLET as unitCouplet, ub.DIRECT as direct,ub.USAGE_WAY as usageWay,ub.BILL_LENGTH as billLength,
+			ub.STOCK_LOWER as stockLower, ub.INFOROWS as inforows,ub.RATION as ration,ub.REPORT_ID as reportId,ub.END_DATE as endDate,
+			ub.PACKNUM as packnum, ub.CANUSEMONTHS as canusemonths, ub.ISNOTICE as isnotice, ub.BILL_RULE as billRule, ub.REMARK as remark
+		FROM
+			UNTAX_BILLNAME ub, ELE_BILLKIND eb
+		WHERE
+			ub.IS_DELETED=0 AND ub.BILLKIND_ID=eb.CHR_ID(+)
+		ORDER BY ub.DISP_CODE ASC
+	</select>
+
+	<select id="getBillNameListByMainId" resultType="BillName" parameterType="BillName">
+		SELECT
+			ub.CHR_ID as chrId, ub.CHR_CODE as chrCode,ub.DISP_CODE as dispCode,ub.CHR_NAME as chrName,ub.LEVEL_NUM as levelNum,ub.ENABLED as enabled,
+			ub.IS_DELETED as isDeleted,ub.IS_LEAF as isLeaf, ub.PARENT_ID as parentId, ub.PARENT_NAME as parentName,eb.CHR_NAME as billKind,
+			ub.BILLKIND_ID as billKindId, ub.UNIT_COUPLET as unitCouplet, ub.DIRECT as direct,ub.USAGE_WAY as usageWay,ub.BILL_LENGTH as billLength,
+			ub.STOCK_LOWER as stockLower, ub.INFOROWS as inforows,ub.RATION as ration,ub.REPORT_ID as reportId,ub.END_DATE as endDate,
+			ub.PACKNUM as packnum, ub.CANUSEMONTHS as canusemonths, ub.ISNOTICE as isnotice, ub.BILL_RULE as billRule, ub.REMARK as remark
+		FROM
+			UNTAX_BILLNAME ub, ELE_BILLKIND eb,UNTAX_UNITITEM_BILLFORM uub
+		WHERE
+			uub.MAIN_ID=#{mainId} AND ub.IS_DELETED=0 AND ub.BILLKIND_ID=eb.CHR_ID(+) AND ub.CHR_ID = uub.BILLTYPE_ID
+		ORDER BY ub.CHR_CODE ASC
+	</select>
+
+</mapper>

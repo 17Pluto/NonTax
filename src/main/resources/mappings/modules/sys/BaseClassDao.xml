@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.framework.modules.dao.BaseClassDao">
+	<select id="findAllList" resultType="BaseClass">
+		SELECT 
+			code,name
+		FROM 
+			sys_base_class
+	</select>
+</mapper>

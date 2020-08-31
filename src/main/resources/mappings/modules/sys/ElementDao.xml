@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.framework.modules.dao.ElementDao">
+	<select id="get" resultType="Element" parameterType="Element">
+		SELECT 
+			CHR_ID,SET_YEAR,ELE_SOURCE,ELE_CODE,ELE_NAME,ENABLED,
+			DISPMODE,REF_MODE,IS_RIGHTFILTER,MAX_LEVEL,CODE_RULE,LEVEL_NAME,
+			CREATE_DATE,CREATE_USER,LATEST_OP_DATE,LATEST_OP_USER,IS_DELETED,
+			IS_NOLEVEL,IS_LOCAL,IS_SYSTEM,ELE_TYPE,IS_VIEW,CZGB_CODE,LAST_VER,
+			DISP_ORDER,SYS_ID,IS_OPERATE,RG_CODE			
+		FROM 
+			SYS_ELEMENT
+		WHERE
+			CHR_ID=#{chrId}
+	</select>	
+	
+	<insert id="insert" parameterType="Element" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT ELEMENT_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			SYS_ELEMENT(CHR_ID,SET_YEAR,ELE_SOURCE,ELE_CODE,ELE_NAME,REF_MODE,CODE_RULE,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,
+				LATEST_OP_USER,LAST_VER,RG_CODE)
+		VALUES
+			(#{chrId},#{setYear},#{eleSource},#{eleCode},#{eleName},#{refMode},#{codeRule},#{createDate},#{createUser},#{latestOpDate},
+			#{latestOpUser},#{lastVer},#{rgCode})
+	</insert> 
+	
+	<delete id="delete" parameterType="Element" >
+		UPDATE 
+			SYS_ELEMENT 
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete> 
+	
+	<update id="update" parameterType="Element">
+		UPDATE 
+			SYS_ELEMENT 
+		SET 
+			ELE_SOURCE=#{eleSource},ELE_CODE=#{eleCode},ELE_NAME=#{eleName},REF_MODE=#{refMode},CODE_RULE=#{codeRule}
+		WHERE 
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="updateIsRightfilter" parameterType="Element">
+		UPDATE
+			SYS_ELEMENT
+		SET
+			IS_RIGHTFILTER=#{isRightfilter}
+		<where>
+			<if test="chrId != null and chrId != '' ">
+				CHR_ID=#{chrId}
+			</if>
+		</where>
+	</update>
+		
+	<select id="getElementListTotal" resultType="long" parameterType="Element">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			SYS_ELEMENT
+		WHERE
+			IS_DELETED = '0'
+	</select>
+	
+	<select id="getElementListByCondition" resultType="Element" parameterType="java.util.HashMap">		
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, se.* FROM (
+				SELECT 
+					se.CHR_ID as chrId,se.ELE_SOURCE as eleSource,se.ELE_CODE as eleCode,se.ELE_NAME as eleName,se.REF_MODE as refMode,se.CODE_RULE as codeRule
+				FROM 
+					SYS_ELEMENT se
+    			WHERE
+    				se.IS_DELETED = '0'
+				<choose>
+					<when test="sort !=null and sort != ''">				
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY se.CHR_ID DESC
+					</otherwise>
+				</choose>    				
+		  ) se where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) se
+		WHERE <![CDATA[ se.rowno > #{startrow} ]]>		
+		
+	</select>
+	
+	<select id="findAllList" resultType="Element" parameterType="Element">
+		SELECT 
+			CHR_ID,ELE_SOURCE,ELE_CODE,ELE_NAME,URL,IS_RIGHTFILTER,CODE_RULE
+		FROM 
+			SYS_ELEMENT
+		WHERE
+			IS_DELETED = '0' and ENABLED = 1
+		<if test="eleCode != null and eleCode != '' ">
+			AND (ELE_CODE like CONCAT(CONCAT('%',#{eleCode}),'%')
+			OR ELE_NAME like CONCAT(CONCAT('%',#{eleName}),'%'))
+		</if>
+		<if test="isRightfilter == 1">
+			AND IS_RIGHTFILTER=#{isRightfilter}
+		</if>
+	</select>
+</mapper>

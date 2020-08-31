@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.UntaxAccountDao">
+	<select id="get" resultType="UntaxAccount" parameterType="String">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,IS_DELETED,CREATE_DATE,
+			CREATE_USER,LATEST_OP_DATE,LATEST_OP_USER,LAST_VER,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,
+			CHR_ID1,CHR_ID2,CHR_ID3,CHR_ID4,CHR_ID5,PARENT_ID,RG_CODE,ACCOUNT_NO,ACCOUNT_NAME,ACCOUNT_TYPE,BANK_ID,
+			BANK_CODE,BANK_NAME,IEN_ID,PAYORRECEIVE,PARENT_NAME
+		FROM
+			ELE_UNTAXACCOUNT
+		WHERE
+			IS_DELETED=0
+	</select>	
+	
+	<insert id="insert" parameterType="UntaxAccount" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT UNTAXACCOUNT_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			ELE_UNTAXACCOUNT(SET_YEAR,CHR_ID,CHR_NAME,ENABLED,IS_DELETED,CREATE_DATE,
+				CREATE_USER,LATEST_OP_DATE,LATEST_OP_USER,LAST_VER,RG_CODE,ACCOUNT_NO,ACCOUNT_NAME,BANK_NAME,IEN_ID
+			)
+		VALUES
+			(
+				#{setYear},#{chrId},#{chrName},#{enabled},#{isDeleted},#{createDate},#{createUser},#{latestOpDate},#{latestOpUser},
+				#{lastVer},#{rgCode},#{accountNo},#{accountName},#{bankName},#{ienId}
+			)
+	</insert> 
+	
+	<delete id="delete" parameterType="UntaxAccount" >
+		UPDATE 
+			ELE_UNTAXACCOUNT
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete>
+	
+	<update id="update" parameterType="UntaxAccount">
+		UPDATE
+			ELE_UNTAXACCOUNT
+		SET
+			CHR_NAME=#{chrName,jdbcType=VARCHAR},ACCOUNT_NO=#{accountNo,jdbcType=VARCHAR},ACCOUNT_NAME=#{accountName,jdbcType=VARCHAR},
+			BANK_NAME=#{bankName,jdbcType=VARCHAR}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+		
+	<select id="getUntaxAccountListTotal" resultType="long" parameterType="UntaxAccount">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			ELE_UNTAXACCOUNT
+		WHERE
+			IS_DELETED = '0'
+		<if test="chrName != null and chrName !=''">
+			AND CHR_NAME LIKE concat(concat('%',#{chrName}),'%')
+		</if>
+		<if test="ienId != null and ienId != '' ">
+			AND IEN_ID = #{ienId}
+		</if>
+		<if test="accountName != null and accountName !=''">
+			AND ACCOUNT_NAME LIKE concat(concat('%',#{accountName}),'%')
+		</if>
+	</select>
+	
+	<select id="getUntaxAccountListByCondition" resultType="UntaxAccount" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, eu.* FROM (
+					SELECT
+						SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,IS_DELETED,CREATE_DATE,
+						CREATE_USER,LATEST_OP_DATE,LATEST_OP_USER,LAST_VER,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,
+						CHR_ID1,CHR_ID2,CHR_ID3,CHR_ID4,CHR_ID5,PARENT_ID,RG_CODE,ACCOUNT_NO,ACCOUNT_NAME,ACCOUNT_TYPE,BANK_ID,
+						BANK_CODE,BANK_NAME,IEN_ID,PAYORRECEIVE,PARENT_NAME
+					FROM
+						ELE_UNTAXACCOUNT eu
+					WHERE
+						IS_DELETED=0
+					<if test="untaxAccount.chrName != null and untaxAccount.chrName !=''">
+						AND CHR_NAME LIKE concat(concat('%',#{untaxAccount.chrName}),'%')
+					</if>
+					<if test="untaxAccount.accountName != null and untaxAccount.accountName !=''">
+						AND ACCOUNT_NAME LIKE concat(concat('%',#{untaxAccount.accountName}),'%')
+					</if>
+					<if test="untaxAccount.ienId != null and untaxAccount.ienId != '' ">
+						AND IEN_ID = #{untaxAccount.ienId}
+					</if>
+		  ) eu where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) eu
+		WHERE <![CDATA[ eu.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="UntaxAccount" parameterType="UntaxAccount">
+		SELECT
+			SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,IS_LEAF,ENABLED,IS_DELETED,CREATE_DATE,
+			CREATE_USER,LATEST_OP_DATE,LATEST_OP_USER,LAST_VER,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,CHR_CODE5,
+			CHR_ID1,CHR_ID2,CHR_ID3,CHR_ID4,CHR_ID5,PARENT_ID,RG_CODE,ACCOUNT_NO,ACCOUNT_NAME,ACCOUNT_TYPE,BANK_ID,
+			BANK_CODE,BANK_NAME,IEN_ID,PAYORRECEIVE,PARENT_NAME
+		FROM
+			ELE_UNTAXACCOUNT
+		WHERE
+			IS_DELETED=0
+	</select>
+</mapper>

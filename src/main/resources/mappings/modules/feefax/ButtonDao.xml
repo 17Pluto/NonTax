@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.ButtonDao">
+	<select id="get" resultType="Button" parameterType="Button">
+		SELECT
+			BUTTON_ID,ACTION_ID,MODULE_ID,DISPLAY_ORDER,DISPLAY_TITLE,LAST_VER,PARENT_BUTTON_ID
+		FROM 
+			SYS_BUTTON
+		WHERE
+			MODULE_ID=#{moduleId}
+	</select>
+	
+	<select id="findAllList" resultType="Button" parameterType="Button">
+		SELECT
+			sb.BUTTON_ID as buttonId,sb.ACTION_ID as actionId,sb.MODULE_ID as moduleId,
+			sb.DISPLAY_ORDER as displayOrder,sb.DISPLAY_TITLE as buttonDisplayTitle,sb.DISPLAY_TITLE as displayTitle,sb.LAST_VER as lastVer,
+			sb.PARENT_BUTTON_ID as parentButtonId,sa.ACTION_CODE as actionCode,sa.ACTION_NAME as actionName
+		FROM
+			SYS_BUTTON sb,SYS_ACTION sa
+		<where>
+			sb.ACTION_ID = sa.ACTION_ID
+			<if test="moduleId != 0">
+			AND sb.MODULE_ID=#{moduleId}
+			</if>
+		</where>
+		ORDER BY sb.MODULE_ID,sb.DISPLAY_ORDER ASC
+	</select>
+
+	<insert id="insert" parameterType="Button" >
+		<selectKey resultType="String" order="BEFORE" keyProperty="buttonId">
+			SELECT BUTTON_S.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO
+			SYS_BUTTON(BUTTON_ID,MODULE_ID,DISPLAY_ORDER,DISPLAY_TITLE,LAST_VER,ACTION_ID
+			<if test="parentButtonId != null and parentButtonId != '' ">
+				,PARENT_BUTTON_ID
+			</if>
+			)
+		VALUES
+			(#{buttonId},#{moduleId},#{displayOrder},#{displayTitle},#{lastVer},#{actionId}
+			<if test="parentButtonId != null and parentButtonId != '' ">
+				,#{parentButtonId}
+			</if>
+			)
+	</insert>
+
+	<delete id="delete" parameterType="Button">
+		DELETE FROM
+			SYS_BUTTON
+		<where>
+			<if test="moduleId != null and moduleId != '' ">
+				AND MODULE_ID=#{moduleId}
+			</if>
+			<if test="buttonId != null and buttonId != '' ">
+				AND BUTTON_ID=#{buttonId}
+			</if>
+		</where>
+	</delete>
+
+
+	<select id="getButtonListByStatusId" resultType="Button" parameterType="Button">
+		SELECT
+			sb.BUTTON_ID as buttonId,sb.ACTION_ID as actionId,sb.MODULE_ID as moduleId,
+			sb.DISPLAY_ORDER as displayOrder,sb.DISPLAY_TITLE as buttonDisplayTitle,sb.LAST_VER as lastVer
+		FROM
+			SYS_BUTTON sb, SYS_MODULE_STATUS_BUTTON smsb
+		WHERE
+			smsb.MODULE_ID=#{moduleId} AND smsb.STATUS_ID=#{statusId} AND smsb.BUTTON_ID = sb.BUTTON_ID
+		ORDER BY sb.DISPLAY_ORDER ASC
+	</select>
+</mapper>

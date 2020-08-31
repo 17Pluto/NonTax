@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.ProjectTypeDao">
+	<select id="get" resultType="ProjectType" parameterType="String">
+		SELECT
+			ID,NAME,IS_AGENT,REMARK,IS_USED,IS_DELETED,SET_YEAR,BH
+		FROM 
+			FF_PROJECT_TYPE
+		WHERE
+			ID=#{id}
+	</select>	
+	
+	<insert id="insert" parameterType="ProjectType" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="id">
+	       	SELECT PROJECTTYPE_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			FF_PROJECT_TYPE(ID,NAME,IS_AGENT,REMARK,IS_USED,SET_YEAR,BH)
+		VALUES
+			(#{id},#{name},#{isAgent},#{remark},#{isUsed},#{setYear},#{bh})
+	</insert> 
+	
+	<delete id="delete" parameterType="ProjectType" >
+		UPDATE 
+			FF_PROJECT_TYPE
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			ID=#{id}
+	</delete> 
+	
+	<update id="update" parameterType="ProjectType">
+		UPDATE 
+			FF_PROJECT_TYPE
+		SET 
+			NAME=#{name},IS_AGENT=#{isAgent},REMARK=#{remark},IS_USED=#{isUsed},SET_YEAR=#{setYear},BH=#{bh}
+		WHERE 
+			ID=#{id}
+	</update>
+	
+	
+		
+	<select id="getProjectTypeListTotal" resultType="long" parameterType="ProjectType">
+		SELECT
+			count(ID) as num
+		FROM
+			FF_PROJECT_TYPE
+		WHERE
+			IS_DELETED = '0'
+	</select>
+	
+	<select id="getProjectTypeListByCondition" resultType="ProjectType" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, se.* FROM (
+				SELECT
+					se.ID as id,se.NAME as name,se.IS_AGENT as isAgent,se.REMARK as remark,se.IS_USED as isUsed,se.IS_DELETED as isDeleted,se.SET_YEAR as setYear,se.BH as bh
+				FROM
+					FF_PROJECT_TYPE se
+    			WHERE
+    				se.IS_DELETED = '0'
+				<choose>
+					<when test="sort !=null and sort != ''">				
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY se.ID DESC
+					</otherwise>
+				</choose>    				
+		  ) se where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) se
+		WHERE <![CDATA[ se.rowno > #{startrow} ]]>		
+		
+	</select>
+	
+	<select id="findAllList" resultType="ProjectType" parameterType="ProjectType">
+		SELECT 
+			ID,NAME,IS_AGENT,REMARK,IS_USED,IS_DELETED,SET_YEAR
+		FROM 
+			FF_PROJECT_TYPE
+		WHERE
+			IS_DELETED = '0'
+	</select>
+</mapper>

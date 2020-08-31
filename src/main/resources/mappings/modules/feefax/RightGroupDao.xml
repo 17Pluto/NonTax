@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.RightGroupDao">
+	<select id="get" resultType="RightGroup" parameterType="RightGroup">
+		SELECT
+			RIGHT_GROUP_ID,RIGHT_GROUP_DESCRIBE,RIGHT_TYPE,RULE_ID,LAST_VER,SET_YEAR,RG_CODE
+		FROM 
+			SYS_RIGHT_GROUP
+		WHERE
+			RIGHT_GROUP_ID=#{rightGroupId}
+	</select>
+
+	<select id="findAllList" resultType="RightGroup" parameterType="RightGroup">
+		SELECT
+			RIGHT_GROUP_ID,RIGHT_GROUP_DESCRIBE,RIGHT_TYPE,RULE_ID,LAST_VER,SET_YEAR,RG_CODE
+		FROM
+			SYS_RIGHT_GROUP
+		<where>
+			<if test="ruleId != null and ruleId != '' ">
+				AND RULE_ID=#{ruleId}
+			</if>
+		</where>
+	</select>
+
+
+	<insert id="insert" parameterType="RightGroup" >
+		<selectKey resultType="String" order="BEFORE" keyProperty="rightGroupId">
+			SELECT RIGHT_GROUP_S.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO
+			SYS_RIGHT_GROUP(RIGHT_GROUP_ID,RIGHT_GROUP_DESCRIBE,RIGHT_TYPE,RULE_ID,LAST_VER,SET_YEAR,RG_CODE)
+		VALUES
+			(#{rightGroupId},#{rightGroupDescribe},#{rightType},#{ruleId},#{lastVer},#{setYear},#{rgCode})
+	</insert>
+
+	<delete id="delete" parameterType="RightGroup" >
+		DELETE FROM
+			SYS_RIGHT_GROUP
+		WHERE
+			RIGHT_GROUP_ID=#{rightGroupId}
+	</delete>
+
+</mapper>

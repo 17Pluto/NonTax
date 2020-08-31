@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.RightGroupDetailDao">
+	<insert id="insert" parameterType="RightGroupDetail" >
+		INSERT INTO
+			SYS_RIGHT_GROUP_DETAIL(RIGHT_GROUP_ID,ELE_CODE,ELE_VALUE,SET_YEAR,LAST_VER,RG_CODE)
+		VALUES
+			(#{rightGroupId},#{eleCode},#{eleValue},#{setYear},#{lastVer},#{rgCode})
+	</insert>
+
+	<delete id="delete" parameterType="RightGroupDetail" >
+		DELETE FROM
+			SYS_RIGHT_GROUP_DETAIL
+		WHERE
+			RIGHT_GROUP_ID=#{rightGroupId}
+	</delete>
+
+	<select id="findAllList" resultType="RightGroupDetail" parameterType="RightGroupDetail">
+		SELECT
+			RIGHT_GROUP_ID,ELE_CODE,ELE_VALUE,SET_YEAR,LAST_VER,RG_CODE
+		FROM
+			SYS_RIGHT_GROUP_DETAIL
+		<where>
+			<if test="rightGroupId != null and rightGroupId != '' ">
+				AND RIGHT_GROUP_ID=#{rightGroupId}
+			</if>
+		</where>
+	</select>
+</mapper>

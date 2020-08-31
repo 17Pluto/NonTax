@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.MenuDao">
+	<select id="get" resultType="Menu" parameterType="Menu">
+		SELECT
+			MENU_ID,MENU_CODE,MENU_NAME,ENABLED,LEVEL_NUM,IS_LEAF,USER_SYS_ID,DISP_ORDER,SCREENTYPE as resourceName
+		FROM 
+			SYS_MENU
+		WHERE
+			MENU_ID=#{menuId}
+	</select>
+
+	<select id="getMenuListByUserId" resultType="Menu" parameterType="Menu">
+		SELECT
+			sm.MENU_ID as menuId,sm.MENU_CODE as menuCode,sm.MENU_NAME as menuName,sm.ENABLED as enabled,sm.LEVEL_NUM as levelNum,sm.IS_LEAF as isLeaf,
+			sm.USER_SYS_ID as userSysId,sm.SCREENTYPE as resourceName
+		FROM
+			SYS_MENU sm, SYS_USER_ROLE_RULE surr, SYS_USERMANAGE su, SYS_ROLE_MENU srm
+		WHERE
+			SU.USER_ID=#{userId} AND SU.USER_ID= SURR.USER_ID AND SURR.ROLE_ID = SRM.ROLE_ID AND srm.MENU_ID=SM.MENU_ID AND sm.SCREENTYPE is not null
+	</select>
+
+	
+	<select id="findAllList" resultType="Menu" parameterType="Menu">
+		SELECT
+			sm.MENU_ID as menuId,sm.MENU_CODE as menuCode,sm.MENU_NAME as menuName,sm.ENABLED as enabled,sm.LEVEL_NUM as levelNum,sm.IS_LEAF as isLeaf,
+			sm.USER_SYS_ID as userSysId
+		FROM
+			SYS_MENU sm
+		WHERE
+        <if test="userSysId != null and userSysId != '' ">
+			sm.USER_SYS_ID=#{userSysId}
+		</if>
+		<if test="resourceName != null and resourceName != '' ">
+			sm.SCREENTYPE=#{resourceName}
+		</if>
+		ORDER BY sm.MENU_ID ASC
+	</select>
+
+	<insert id="insert" parameterType="Menu" >
+		<selectKey resultType="Long" order="BEFORE" keyProperty="menuId">
+			SELECT MENU_S.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO
+			SYS_MENU(MENU_ID,MENU_CODE,MENU_NAME,ENABLED,LEVEL_NUM,IS_LEAF,LAST_VER,USER_SYS_ID,DISP_ORDER,SCREENTYPE)
+		VALUES
+			(#{menuId},#{menuCode},#{menuName},#{enabled},#{levelNum},#{isLeaf},#{lastVer},#{userSysId},#{dispOrder},#{resourceName,jdbcType=VARCHAR})
+	</insert>
+
+	<delete id="delete" parameterType="Menu" >
+		DELETE FROM
+			SYS_MENU
+		WHERE
+			MENU_ID=#{menuId}
+	</delete>
+
+	<update id="update" parameterType="Menu">
+		UPDATE
+			SYS_MENU
+		<set>
+			MENU_CODE=#{menuCode},
+			MENU_NAME=#{menuName},
+			ENABLED=#{enabled},
+			IS_LEAF=#{isLeaf},
+			LAST_VER=#{lastVer},
+			USER_SYS_ID=#{userSysId},
+			DISP_ORDER=#{dispOrder},
+			SCREENTYPE=#{resourceName,jdbcType=VARCHAR},
+		</set>
+		WHERE
+			MENU_ID=#{menuId}
+	</update>
+</mapper>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BillRecoveryListDao">
+	<select id="get" resultType="BillRecoveryList" parameterType="BillRecoveryList">
+		SELECT
+			CHR_ID,MAIN_ID,UNTAX_BILLNAME_ID,UNTAX_BILLPRICE_ID,MEASURE,MULS,PRICE,BGN_BILL_NO,END_BILL_NO,STORE_NUM,REMARK,IS_DELETED,MONEY,BOOKNUM,OCCUR_TIME,AREA_SOURCE,
+			IS_USE_OVER,IS_BILL_BACK,SOURCE_ID,CANUSEDATE
+		FROM
+			UNTAX_0_BILLRECOVERY_LIST
+		WHERE
+			IS_DELETED=0
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+	</select>	
+	
+	<insert id="insert" parameterType="BillRecoveryList" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BILLRECOVERYLIST_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_0_BILLRECOVERY_LIST(CHR_ID,MAIN_ID,UNTAX_BILLNAME_ID,BGN_BILL_NO,END_BILL_NO,STORE_NUM,REMARK,IS_DELETED,BOOKNUM,OCCUR_TIME,
+				IS_USE_OVER,IS_BILL_BACK
+				)
+		VALUES
+			(#{chrId},#{mainId},#{untaxBillnameId},
+				#{bgnBillNo},#{endBillNo},#{storeNum},#{remark,jdbcType=VARCHAR},#{isDeleted},#{booknum},#{occurTime},#{isUseOver},
+				#{isBillBack}
+			)
+	</insert>
+
+
+	<delete id="delete" parameterType="BillRecoveryList" >
+		UPDATE
+			UNTAX_0_BILLRECOVERY_LIST
+		SET 
+			IS_DELETED = '1'
+		<where>
+			<if test="mainId != null and mainId != '' ">
+				AND MAIN_ID=#{mainId}
+			</if>
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+		</where>
+	</delete>
+
+	<update id="update" parameterType="BillRecoveryList">
+		UPDATE
+			UNTAX_0_BILLRECOVERY_LIST
+		SET
+			CHR_ID=#{chrId},MAIN_ID=#{mainId},UNTAX_BILLNAME_ID=#{untaxBillnameId},UNTAX_BILLPRICE_ID=#{untaxBillpriceId},MEASURE=#{measure},MULS=#{muls},PRICE=#{price},
+			BGN_BILL_NO=#{bgnBillNo},END_BILL_NO=#{endBillNo},STORE_NUM=#{storeNum},REMARK=#{remark},IS_DELETED=#{isDeleted},MONEY=#{money},BOOKNUM=#{booknum},OCCUR_TIME={occurTime},AREA_SOURCE=#{areaSource},IS_USE_OVER=#{isUseOver},
+			IS_BILL_BACK=#{isBillBack},SOURCE_ID=#{sourceId},CANUSEDATE=#{canusedate}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+		
+	<select id="getBillRecoveryListListTotal" resultType="long" parameterType="BillRecoveryList">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_0_BILLRECOVERY_LIST
+		WHERE
+			IS_DELETED = '0'
+	</select>
+	
+	<select id="getBillRecoveryListListByCondition" resultType="BillRecoveryList"
+			parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ub.* FROM (
+				SELECT
+					CHR_ID,MAIN_ID,UNTAX_BILLNAME_ID,UNTAX_BILLPRICE_ID,MEASURE,MULS,PRICE,BGN_BILL_NO,END_BILL_NO,STORE_NUM,REMARK,IS_DELETED,MONEY,BOOKNUM,OCCUR_TIME,AREA_SOURCE,
+					IS_USE_OVER,IS_BILL_BACK,SOURCE_ID,CANUSEDATE
+				FROM
+					UNTAX_0_BILLRECOVERY_LIST ub
+				WHERE
+					IS_DELETED=0
+		  ) ub where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ub
+		WHERE <![CDATA[ ub.rowno > #{startrow} ]]>
+	</select>
+
+	<select id="findAllList" resultType="BillRecoveryList" parameterType="BillRecoveryList">
+		SELECT
+			ubl.CHR_ID as chrId,ubl.MAIN_ID as mainId,ubl.UNTAX_BILLNAME_ID as untaxBillnameId,ubl.UNTAX_BILLPRICE_ID as untaxBillpriceId,
+			ubl.MEASURE as measure,ubl.MULS as muls,ubl.PRICE as price,ubl.BGN_BILL_NO as bgnBillNo,ubl.END_BILL_NO as endBillNo,ubl.STORE_NUM as storeNum,
+			ubl.REMARK as remark,ubl.IS_DELETED as isDeleted,ubl.MONEY as money,ubl.BOOKNUM as bookNum,ubl.OCCUR_TIME as occurTime,ubl.AREA_SOURCE as areaSource,
+			ubl.IS_USE_OVER as isUseOver,ubl.IS_BILL_BACK as isBillBack,ubl.SOURCE_ID as sourceId,ubl.CANUSEDATE as canusedate,ub.CHR_NAME as untaxBillname
+		FROM
+			UNTAX_0_BILLRECOVERY_LIST ubl, UNTAX_BILLNAME ub
+		WHERE
+			ubl.IS_DELETED = 0
+		<if test="mainId != null and mainId != '' ">
+			AND ubl.MAIN_ID = #{mainId}
+		</if>
+		AND ubl.UNTAX_BILLNAME_ID = ub.CHR_ID
+		<if test="untaxBillnameId != null and untaxBillnameId != '' ">
+			AND ubl.UNTAX_BILLNAME_ID = #{untaxBillnameId}
+		</if>
+	</select>
+
+
+	<select id="getBillRecoveryListByUntaxBillnameId" resultType="BillRecoveryList" parameterType="BillRecoveryList">
+		SELECT
+			ubl.CHR_ID as chrId,ubl.MAIN_ID as mainId,ubl.UNTAX_BILLNAME_ID as untaxBillnameId,ubl.UNTAX_BILLPRICE_ID as untaxBillpriceId,
+			ubl.MEASURE as measure,ubl.MULS as muls,ubl.PRICE as price,ubl.BGN_BILL_NO as bgnBillNo,ubl.END_BILL_NO as endBillNo,
+			ubl.STORE_NUM as storeNum,ubl.REMARK as remark,ubl.IS_DELETED as isDeleted,ubl.MONEY as money,
+			ubl.BOOKNUM as booknum,ubl.OCCUR_TIME as occurTime,ubl.CANUSEDATE as canusedate,ubl.IS_BILL_BACK as isBillBack,ubl.SOURCE_ID as sourceId,
+			ub.CHR_NAME as untaxBillname,ub.PACKNUM as packnum, ub.BILL_LENGTH as billLength
+		FROM
+			UNTAX_0_BILLRECOVERY_LIST ubl, UNTAX_BILLNAME ub, UNTAX_0_BILLRECOVERY ubs
+		WHERE
+			ubl.IS_DELETED = 0 AND ubs.IS_DELETED = 0 AND ubl.MAIN_ID = ubs.CHR_ID
+		<if test="isend == 1">
+			AND ubs.ISEND=1
+		</if>
+		<if test="enId != null and enId != '' ">
+			AND ubs.EN_ID = #{enId}
+		</if>
+			AND ubl.UNTAX_BILLNAME_ID = ub.CHR_ID
+		<if test="untaxBillnameId != null and untaxBillnameId != '' ">
+			AND ubl.UNTAX_BILLNAME_ID = #{untaxBillnameId}
+		</if>
+			order by ubl.BGN_BILL_NO
+	</select>
+</mapper>

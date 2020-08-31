@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.UntaxNosourceCollectionDao">
+	<select id="get" resultType="UntaxNosourceCollection" parameterType="String">
+		SELECT
+			NOSOURCE_ID,COLLECTION_ID
+		FROM
+			UNTAX_NOSOURCE_COLLECTION
+	</select>	
+	
+	<insert id="insert" parameterType="UntaxNosourceCollection" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT NOSOURCE_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+					UNTAX_NOSOURCE_COLLECTION(NOSOURCE_ID,COLLECTION_ID)
+		VALUES
+			(#{nosourceId},#{collectionId})
+	</insert> 
+	
+	<delete id="delete" parameterType="UntaxNosourceCollection" >
+		DELETE FROM
+			UNTAX_NOSOURCE_COLLECTION
+		WHERE
+			NOSOURCE_ID=#{nosourceId}
+	</delete>
+	
+	<update id="update" parameterType="UntaxNosourceCollection">
+		UPDATE
+			UNTAX_NOSOURCE_COLLECTION
+		SET
+			NOSOURCE_ID=#{nosourceId},COLLECTION_ID=#{collectionId}
+		WHERE
+			NOSOURCE_ID=#{nosourceId}
+	</update>
+		
+	<select id="getUntaxNosourceCollectionListTotal" resultType="long" parameterType="UntaxNosourceCollection">
+		SELECT
+			count(NOSOURCE_ID) as num
+		FROM
+			UNTAX_NOSOURCE_COLLECTION
+	</select>
+	
+	<select id="getUntaxNosourceCollectionListByCondition" resultType="com.xcmis.feefax.modules.entity.UntaxNosourceCollection" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, eu.* FROM (
+					SELECT
+						 NOSOURCE_ID,COLLECTION_ID
+					FROM
+						UNTAX_NOSOURCE_COLLECTION eu
+		  ) eu where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) eu
+		WHERE <![CDATA[ eu.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="UntaxNosourceCollection" parameterType="UntaxNosourceCollection">
+		SELECT
+			NOSOURCE_ID,COLLECTION_ID
+		FROM
+			UNTAX_NOSOURCE_COLLECTION
+		<where>
+			<if test="collectionId != null and collectionId != ''">
+				AND COLLECTION_ID=#{collectionId}
+			</if>
+		</where>
+	</select>
+
+	<insert id="insertIds" parameterType="UntaxNosourceCollection" >
+		INSERT INTO
+			UNTAX_NOSOURCE_COLLECTION(
+				NOSOURCE_ID,COLLECTION_ID
+			)
+		VALUES
+			(
+				#{nosourceId},#{collectionId}
+			)
+	</insert>
+
+
+
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BankInfoDao">
+	<select id="get" resultType="BankInfo" parameterType="BankInfo">
+		SELECT
+			CHR_ID,CREATE_DATE,CREATE_TYPE,CONTENT
+		FROM
+			SYS_BANK_INFO
+	</select>
+
+
+	<insert id="insert" parameterType="BankInfo" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BANK_INFO_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			SYS_BANK_INFO(
+				CHR_ID,CREATE_DATE,CREATE_TYPE,CONTENT
+			)
+		VALUES
+			(#{chrId},#{createDate},#{createType},#{content})
+	</insert> 
+
+	<update id="update" parameterType="BankInfo">
+		UPDATE
+			SYS_BANK_INFO
+		SET
+			CONTENT=#{content}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<select id="findAllList" resultType="BankInfo" parameterType="BankInfo">
+		SELECT
+			CHR_ID,CREATE_DATE,CREATE_TYPE,CONTENT
+		FROM
+			SYS_BANK_INFO
+	</select>
+
+</mapper>

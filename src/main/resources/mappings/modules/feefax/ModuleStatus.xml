@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.ModuleStatusDao">
+	<insert id="insert" parameterType="ModuleStatus" >
+		INSERT INTO
+			SYS_MODULE_STATUS(MODULE_ID,STATUS_ID,DISPLAY_ORDER,DISPLAY_TITLE,LAST_VER)
+		VALUES
+			(#{moduleId},#{statusId},#{displayOrder},#{displayTitle},#{lastVer})
+	</insert>
+
+	<delete id="delete" parameterType="ModuleStatus">
+		DELETE FROM
+			SYS_MODULE_STATUS
+		<where>
+			<if test="moduleId != null and moduleId != '' ">
+				AND MODULE_ID=#{moduleId}
+			</if>
+			<if test="statusId != null and statusId != '' ">
+				AND STATUS_ID=#{statusId}
+			</if>
+		</where>
+	</delete>
+</mapper>

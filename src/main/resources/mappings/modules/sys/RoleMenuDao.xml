@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.framework.modules.dao.RoleMenuDao">
+	<insert id="insert" parameterType="RoleMenu" >
+		INSERT INTO
+			SYS_ROLE_MENU(ROLE_ID,MENU_ID,SET_YEAR,LAST_VER,RG_CODE)
+		VALUES
+			(#{roleId},#{menuId},#{setYear},#{lastVer},#{rgCode})
+	</insert> 
+	
+	<delete id="delete" parameterType="RoleMenu" >
+		DELETE FROM
+			SYS_ROLE_MENU
+		WHERE
+			ROLE_ID=#{roleId}
+		<if test="menuId != null and menuId != '' ">
+			AND MENU_ID = #{menuId}
+		</if>
+	</delete>
+
+	
+	<select id="findAllList" resultType="RoleMenu" parameterType="RoleMenu">
+		SELECT
+			ROLE_ID,MENU_ID,SET_YEAR,LAST_VER,RG_CODE
+		FROM
+			SYS_ROLE_MENU
+		WHERE
+			ROLE_ID=#{roleId}
+	</select>
+</mapper>

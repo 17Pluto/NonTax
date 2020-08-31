@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.CollectionsReportDao">
+	<select id="get" resultType="Collections" parameterType="Collections">
+		SELECT
+			uc.CHR_ID as chrId, uc.BILL_NO as billNo, uc.BILLTYPE_ID as billtypeId, ub.CHR_NAME as billName,UC.EN_ID as enId, EIE.CHR_NAME as enName,EIE.CHR_CODE as enCode,
+			uc.PAYERID as payerid, uc.PAYER as payerName, eu.ACCOUNT_NAME as enAccountNo, uc.REMARK as remark, uc.CREATE_USER as createUser, SU.USER_NAME as userName,
+			UC.PM_ID as pmId,eup.CHR_NAME as pmName, UC.MAKEDATE as makedate,
+			CASE WHEN uc.RECEIVETYPE = 1 THEN( SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTIONDETAIL WHERE main_id = uc.CHR_ID)
+			ELSE(SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTION_GATHER_DETAIL WHERE main_id IN (SELECT CHR_ID FROM UNTAX_COLLECTION_GATHER WHERE COLLECT_ID = uc.CHR_ID))
+			END chargemoney,
+			uc.SET_YEAR as setYear, vur.CHR_NAME as receName,vur.ACCOUNT_NO as receAccountNo,vur.BANK_NAME as receBankName, vur.ISBN as isbn, uc.RECEIVERID as receiverid,
+			uc.PAYERACCOUNT as payeraccount, uc.PAYERBANK as payerbank, uc.CONSIGNEE_EN_ID as consigneeEnId,uc.REQ_BILL_NO as reqBillNo, uc.ERASEFLAG as eraseflag, uc.PAYFLAG as payflag,
+			uc.CHECK_FLAG as checkFlag,vur.BANK_NO as bankNo
+		FROM
+			UNTAX_COLLECTION uc,UNTAX_BILLNAME ub,ELE_INCOME_ENTERPRISE eie,ELE_UNTAXACCOUNT eu,SYS_USERMANAGE su, ELE_UNTAXPAYMODE eup, VW_UNTAX_RECEIVERACCOUNT vur
+		WHERE
+			uc.IS_DELETED=0 and uc.BILLTYPE_ID = ub.CHR_ID and UC.EN_ID = EIE.CHR_ID and uc.PAYERID = eu.CHR_ID(+) and uc.CREATE_USER = su.USER_ID and UC.PM_ID = eup.CHR_ID and
+			vur.CHR_ID = uc.RECEIVERID
+			<if test="chrId != null and chrId != '' ">
+				AND uc.CHR_ID=#{chrId}
+			</if>
+			<if test="reqBillNo != null and reqBillNo != '' ">
+				AND uc.REQ_BILL_NO=#{reqBillNo}
+			</if>
+	</select>	
+	
+	<insert id="insertForGather" parameterType="Collections" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT COLLECTION_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_COLLECTION(
+				SET_YEAR,CHR_ID,RG_CODE,CREATE_USER,CREATE_DATE,LASTEST_OP_USER,LASTEST_OP_DATE,
+				IS_DELETED,BILL_NO,EN_ID,PM_ID,MAKEDATE,PAYERID,PAYERACCOUNT,PAYERBANK,RECEIVERID,BILLTYPE_ID,REMARK,PAYER,
+				ISCONSIGN,CONSIGNEE_EN_ID,REQ_BILL_NO,RECEIVETYPE,PRINTFLAG,PRINTDATE,BILL_NAME,PM_NAME,EN_NAME,USER_NAME
+				)
+		VALUES
+			(#{setYear},#{chrId},#{rgCode},#{createUser},#{createDate},#{lastestOpUser},#{lastestOpDate},#{isDeleted},
+			#{billNo,jdbcType=VARCHAR},#{enId},#{pmId},#{makedate},#{payerid,jdbcType=VARCHAR},#{payeraccount,jdbcType=VARCHAR},
+			#{payerbank,jdbcType=VARCHAR},#{receiverid},#{billtypeId},#{remark,jdbcType=VARCHAR},#{payerName,jdbcType=VARCHAR},
+			#{isconsign},#{consigneeEnId,jdbcType=VARCHAR},#{reqBillNo},#{receivetype},#{printflag},#{printdate},#{billName},#{pmName},#{enName},
+			#{userName}
+			)
+	</insert>
+
+	<insert id="insert" parameterType="Collections" >
+		<selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+			SELECT COLLECTION_S.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO
+			UNTAX_COLLECTION(
+				SET_YEAR,CHR_ID,RG_CODE,CREATE_USER,CREATE_DATE,LASTEST_OP_USER,LASTEST_OP_DATE,
+				IS_DELETED,BILL_NO,EN_ID,PM_ID,MAKEDATE,PAYERID,PAYERACCOUNT,PAYERBANK,RECEIVERID,BILLTYPE_ID,REMARK,PAYER,
+				ISCONSIGN,CONSIGNEE_EN_ID,REQ_BILL_NO,RECEIVETYPE
+			)
+		VALUES
+			(#{setYear},#{chrId},#{rgCode},#{createUser},#{createDate},#{lastestOpUser},#{lastestOpDate},#{isDeleted},
+				#{billNo,jdbcType=VARCHAR},#{enId},#{pmId},#{makedate},#{payerid,jdbcType=VARCHAR},#{payeraccount,jdbcType=VARCHAR},
+				#{payerbank,jdbcType=VARCHAR},#{receiverid},#{billtypeId},#{remark,jdbcType=VARCHAR},#{payerName,jdbcType=VARCHAR},
+				#{isconsign},#{consigneeEnId,jdbcType=VARCHAR},#{reqBillNo},#{receivetype}
+			)
+	</insert>
+
+	<delete id="delete" parameterType="Collections" >
+		UPDATE 
+			UNTAX_COLLECTION
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete>
+
+	<update id="cancelCollections" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			ERASEFLAG=#{eraseflag},ERASEDATE=#{erasedate}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<update id="updatePrintflag" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			PRINTFLAG=#{printflag},PRINTDATE=#{printdate},BILL_NAME=#{billName},PM_NAME=#{pmName},EN_NAME=#{enName},USER_NAME=#{userName}
+		<if test="billNo != null and billNo != '' ">
+			,BILL_NO=#{billNo}
+		</if>
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+
+	<update id="updatePayflag" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			PAYFLAG=#{payflag},PAYDATE=#{paydate}
+		<where>
+			<if test="reqBillNo != null and reqBillNo != '' ">
+				AND REQ_BILL_NO=#{reqBillNo}
+			</if>
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+		</where>
+	</update>
+
+
+	<update id="updateCheckflag" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			CHECK_FLAG=#{checkflag},CHECKDATE=#{checkdate}
+		WHERE
+			REQ_BILL_NO=#{reqBillNo}
+	</update>
+
+	<update id="updateIsSend" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			IS_SEND=#{isSend}
+		WHERE
+			REQ_BILL_NO=#{reqBillNo}
+	</update>
+
+	
+	<update id="update" parameterType="Collections">
+		UPDATE
+			UNTAX_COLLECTION
+		SET
+			LASTEST_OP_USER=#{lastestOpUser},LASTEST_OP_DATE=#{lastestOpDate},
+			EN_ID=#{enId},PM_ID=#{pmId},MAKEDATE=#{makedate},PAYERID=#{payerid,jdbcType=VARCHAR},PAYER=#{payerName,jdbcType=VARCHAR},PAYERACCOUNT=#{payeraccount,jdbcType=VARCHAR},
+			PAYERBANK=#{payerbank,jdbcType=VARCHAR},RECEIVERID=#{receiverid},BILLTYPE_ID=#{billtypeId},REMARK=#{remark,jdbcType=VARCHAR}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+		
+	<select id="getCollectionsListTotal" resultType="long" parameterType="Collections">
+		SELECT
+			count(uc.CHR_ID) as num
+		FROM
+			UNTAX_COLLECTION uc, SYS_USERMANAGE su, ELE_UNTAXACCOUNT eu
+		WHERE
+			uc.IS_DELETED = '0' AND uc.ISCONSIGN = #{isconsign} AND uc.CREATE_USER = su.USER_ID and uc.PAYERID = eu.CHR_ID(+)
+		AND uc.RECEIVETYPE = #{receivetype}
+		<if test="createUser != null and createUser != '' ">
+			AND uc.CREATE_USER=#{createUser}
+		</if>
+		<if test="payerName != null and payerName != '' ">
+			AND uc.PAYER like CONCAT(CONCAT('%',#{payerName}),'%')
+		</if>
+		<if test="stateCode == '002'">
+			AND uc.ERASEFLAG=0
+		</if>
+		<if test="stateCode == '005'">
+			AND uc.PRINTFLAG=0
+		</if>
+		<if test="stateCode == '008'">
+			AND uc.PRINTFLAG=1 AND uc.PAYFLAG=0 AND uc.ERASEFLAG=0
+		</if>
+		<if test="stateCode == '901'">
+			AND uc.PRINTFLAG=0
+		</if>
+		<if test="stateCode == '902'">
+			AND uc.PRINTFLAG=1 AND uc.PAYFLAG=0 AND uc.ERASEFLAG=0
+		</if>
+		<if test="stateCode == '903'">
+			AND uc.PRINTFLAG=1 AND uc.PAYFLAG=1 AND uc.ERASEFLAG=0
+		</if>
+		<if test="stateCode == '904'">
+			AND uc.PRINTFLAG=1 AND uc.PAYFLAG=1 AND uc.RETURNFLAG=0 AND uc.ERASEFLAG=0
+		</if>
+		<if test="stateCode == '905'">
+			AND uc.PRINTFLAG=1 AND uc.PAYFLAG=1 AND uc.RETURNFLAG=1 AND uc.ERASEFLAG=0
+		</if>
+		<if test="stateCode == '103'">
+			AND uc.ERASEFLAG=1
+		</if>
+		<if test="enId != null and enId != '' ">
+			AND uc.EN_ID=#{enId}
+		</if>
+		<if test="beginMakedate != null and beginMakedate != '' ">
+			AND uc.MAKEDATE &gt;= #{beginMakedate}
+		</if>
+		<if test="endMakedate != null and endMakedate != '' ">
+			AND uc.MAKEDATE &lt;= #{endMakedate}
+		</if>
+		<if test="pmId != null and pmId != '' ">
+			AND uc.PM_ID = #{pmId}
+		</if>
+		<if test="billtypeId != null and billtypeId != '' ">
+			AND uc.BILLTYPE_ID = #{billtypeId}
+		</if>
+		<if test="beginBillNo != null and beginBillNo != '' ">
+			AND uc.BILL_NO >= #{beginBillNo}
+		</if>
+		<if test="endBillNo != null and endBillNo != '' ">
+			AND uc.BILL_NO &lt;= #{endBillNo}
+		</if>
+		<if test="incitemid != null and incitemid != '' ">
+			AND uc.chr_id in(select MAIN_ID from UNTAX_COLLECTIONDETAIL where INCITEMID=#{incitemid})
+		</if>
+	</select>
+
+
+	
+	<select id="getCollectionsReportListByCondition" resultType="Collections" parameterType="java.util.HashMap">
+		select
+			uc.CHR_ID as chrId, uc.BILL_NO as billNo, uc.BILLTYPE_ID as billtypeId,UC.EN_ID as enId,
+			uc.PAYERID as payerid, uc.PAYER as payerName, uc.REMARK as remark, uc.CREATE_USER as createUser,
+			UC.PM_ID as pmId,UC.MAKEDATE as makedate,uc.RECEIVETYPE as receivetype,uc.PAYFLAG as payflag,uc.CHECKEARNE as checkearne,
+			uc.CHECK_FLAG as checkFlag,uc.BANK_INDATE as bankIndate,uc.CHECKEARNEDATE as
+			checkearnedate,EIE.CHR_CODE as enCode,	uc.USER_NAME as inputername,uc.PRINTFLAG as
+			printflag,uc.REMARK as remark,uc.ERASEFLAG as eraseflag,
+			CASE WHEN uc.RECEIVETYPE = 1 THEN( SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTIONDETAIL WHERE main_id = uc.CHR_ID)
+			WHEN uc.RECEIVETYPE = 2 THEN( SELECT SUM (CHARGEMONEY) FROM UNTAX_EDU_COLLECTION_DETAIL WHERE STU_MAINID = uc.CHR_CODE4)
+			ELSE(SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTION_GATHER_DETAIL WHERE main_id IN (SELECT CHR_ID FROM UNTAX_COLLECTION_GATHER WHERE COLLECT_ID = uc.CHR_ID))
+			END chargemoney,
+			vur.ACCOUNT_NO as receiveraccount,vur.BANK_NAME as receiverbank, vur.CHR_NAME as receiver,
+			CASE WHEN uc.RECEIVETYPE = 1 THEN(SELECT wm_concat(eii.CHR_CODE || eii.CHR_NAME) FROM UNTAX_COLLECTIONDETAIL ucd ,ELE_INCOME_ITEM eii WHERE ucd.main_id = uc.CHR_ID AND ucd.INCITEMID = eii.CHR_ID)
+			WHEN uc.RECEIVETYPE = 2 THEN(SELECT wm_concat(eii.CHR_CODE || eii.CHR_NAME) FROM UNTAX_EDU_COLLECTION_DETAIL ucd ,ELE_INCOME_ITEM eii WHERE ucd.STU_MAINID = uc.CHR_CODE4 AND ucd.INCITEMID = eii.CHR_ID)
+			ELSE(SELECT wm_concat(eii.CHR_CODE || eii.CHR_NAME) FROM UNTAX_COLLECTION_GATHER_DETAIL ucgd,ELE_INCOME_ITEM eii WHERE ucgd.main_id IN ( SELECT CHR_ID FROM UNTAX_COLLECTION_GATHER WHERE COLLECT_ID = uc.CHR_ID ) and ucgd.INCITEMID = eii.CHR_ID)
+			END incitemNames,
+			CASE WHEN uc.BILL_NAME is null then ub.CHR_NAME
+			ELSE uc.BILL_NAME END billName,
+			CASE WHEN uc.EN_NAME is null then EIE.CHR_NAME
+			ELSE uc.EN_NAME END enName,
+			CASE WHEN uc.PM_NAME is null then eup.CHR_NAME
+			ELSE uc.PM_NAME END pmName,
+			CASE WHEN uc.USER_NAME is null then SU.USER_NAME
+			ELSE uc.USER_NAME END userName,
+			uc.ISCONSIGN as isconsign
+		from
+			UNTAX_COLLECTION uc,UNTAX_BILLNAME ub,ELE_INCOME_ENTERPRISE eie,ELE_UNTAXACCOUNT eu,SYS_USERMANAGE su, ELE_UNTAXPAYMODE eup, VW_UNTAX_RECEIVERACCOUNT vur
+		WHERE
+			uc.IS_DELETED=0 and uc.BILLTYPE_ID = ub.CHR_ID and UC.EN_ID = EIE.CHR_ID and uc.PAYERID = eu.CHR_ID(+) and uc.CREATE_USER = su.USER_ID and UC.PM_ID = eup.CHR_ID
+			AND vur.CHR_ID = uc.RECEIVERID
+		<if test="collections.incitemNames != null and collections.incitemNames != '' ">
+			AND incitemNames like CONCAT(CONCAT('%',#{collections.incitemNames}),'%')
+		</if>
+		<if test="collections.enCode != null and collections.enCode != '' ">
+			AND EIE.CHR_CODE like CONCAT(CONCAT('%',#{collections.enCode}),'%')
+		</if>
+		<if test="collections.beginMakedate != null and collections.beginMakedate != '' ">
+			AND UC.MAKEDATE >= #{collections.beginMakedate}
+		</if>
+		<if test="collections.endMakedate != null and collections.endMakedate != '' ">
+			AND UC.MAKEDATE &lt;= #{collections.endMakedate}
+		</if>
+		<if test="collections.receivetype != null and collections.receivetype != '' ">
+			AND UC.MAKEDATE = #{collections.receivetype}
+		</if>
+		<if test="collections.payflag == 2">
+			AND UC.PAYFLAG = 0
+		</if>
+		<if test="collections.payflag == 1">
+			AND UC.PAYFLAG = 1
+		</if>
+		<if test="collections.checkflag == 2">
+			AND UC.CHECK_FLAG = 0
+		</if>
+		<if test="collections.checkflag == 1">
+			AND UC.CHECK_FLAG = 1
+		</if>
+		<if test="collections.checkearne == 2">
+			AND UC.CHECKEARNE = 0
+		</if>
+		<if test="collections.checkearne == 1">
+			AND UC.CHECKEARNE = 1
+		</if>
+		<if test="collections.eraseflag == 2">
+			AND UC.ERASEFLAG = 0
+		</if>
+		<if test="collections.eraseflag == 1">
+			AND UC.ERASEFLAG = 1
+		</if>
+		<if test="belongType != '007'.toString()">
+			AND (uc.EN_ID in
+		<foreach collection="incomeEnterpriseList" index="index" item="incomeEnterprise" open="(" separator="," close=")">
+			#{incomeEnterprise.enId}
+		</foreach>
+			OR uc.CONSIGNEE_EN_ID IN
+		<foreach collection="incomeEnterpriseList" index="index" item="incomeEnterprise" open="(" separator="," close=")">
+			#{incomeEnterprise.enId}
+		</foreach>
+			)
+		</if>
+		<if test="belongType == '007'.toString() and collections.enId != null and collections.enId != '' ">
+			AND (uc.EN_ID in
+			<foreach collection="incomeEnterpriseList" index="index" item="incomeEnterprise" open="(" separator="," close=")">
+				#{incomeEnterprise.enId}
+			</foreach>
+			OR uc.CONSIGNEE_EN_ID IN
+			<foreach collection="incomeEnterpriseList" index="index" item="incomeEnterprise" open="(" separator="," close=")">
+				#{incomeEnterprise.enId}
+			</foreach>
+			)
+		</if>
+
+		<if test="collections.begincheckearnedate != null and collections.begincheckearnedate != '' ">
+			AND uc.CHECKEARNEDATE &gt;= #{collections.begincheckearnedate}
+		</if>
+		<if test="collections.endcheckearnedate != null and collections.endcheckearnedate != '' ">
+			AND uc.CHECKEARNEDATE &lt;= #{collections.endcheckearnedate}
+		</if>
+		<if test="collections.pmId != null and collections.pmId != '' ">
+			AND uc.PM_ID = #{collections.pmId}
+		</if>
+		<if test="collections.billtypeId != null and collections.billtypeId != '' ">
+			AND uc.BILLTYPE_ID = #{collections.billtypeId}
+		</if>
+		<if test="collections.beginBillNo != null and collections.beginBillNo != '' ">
+			AND uc.BILL_NO >= #{collections.beginBillNo}
+		</if>
+		<if test="collections.endBillNo != null and collections.endBillNo != '' ">
+			AND uc.BILL_NO &lt;= #{collections.endBillNo}
+		</if>
+			ORDER BY uc.MAKEDATE desc
+	</select>
+
+
+	<select id="findAllList" resultType="Collections" parameterType="Collections">
+		SELECT
+			SET_YEAR,CHR_ID,RG_CODE,CREATE_USER,CREATE_DATE,LASTEST_OP_USER,LASTEST_OP_DATE,
+			IS_DELETED,BILL_NO,VERIFY_BILL_NO,VERIFY_NO,EN_ID,PM_ID,CHEQUE_NO,MAKEDATE,PAYERID,PAYER
+			PAYERACCOUNT,PAYERBANK,RECEIVERID,RECEIVER,RECEIVERACCOUNT,RECEIVERBANK,ISCONSIGN,RECEIVETYPE,
+			INPUTERNAME,PRINTFLAG,PRINTDATE,PRINTTIMES,PAYFLAG,PAYDATE,RETURNFLAG,RETURNDATE,ERASEFLAG,ERASEDATE,
+			LATEFLAG,AUTOCOLLECTFLAG,REMARK,ORG_TYPE,BELONG_ORG,RCID,ISEND,FLOW_BILL_NO,BILLTYPE_ID,CHECKEARNE,
+			CONSIGN_EN_ID,IS_SEND,ADJUSTFLAG,IS_GET,CHECKDATE,TALLYTAG,BANK_INDATE,BANK_ACCDATE,BANK_CHILDCODE,
+			IS_OTHERPLACE,IS_HANDWORK,INCOMESTATUS,BANK_SUPPLY_FLAG,SWITCH_TYPE,SWITCH_ID,CHECK_FLAG,LAST_VER,REQ_BILLTYPE_ID
+			REQ_BILL_NO,REQ_FLOW_BILL_NO,CONSIGNEE_EN_ID,ISNOTICE,ERASEAFTERID,NOSOURCE_ID,UNIT_SENDFLAG,CHECKEARNEDATE,
+			NOSOURCE_IDS,SUPPLYTEMPLET_ID,GATHER_USER,GATHER_CONFIRM_USER,PACK_CONFIRM_NO,ISDIVIDE,CHR_CODE1,CHR_CODE2,CHR_CODE3,CHR_CODE4,
+			CHR_CODE5,CHR_CODE6,CHR_CODE7,CHR_CODE8,CHR_CODE9,CHR_CODE10,SOURCE_ID,REMARK1,BUDGET_LEVEL,POS_SK_FLAG,POS_SK_DATE,POS_QS_FLAG,
+			POS_QS_DATE,ERASE_ISSEND,ERASESURE,BANK_CHECKFLAG
+		FROM
+			UNTAX_COLLECTION
+		WHERE
+			IS_DELETED=0
+	</select>
+
+
+	<select id="getCollectionsForPrint" resultType="Collections" parameterType="Collections">
+		SELECT
+			uc.CHR_ID as chrId, uc.BILL_NO as billNo, uc.BILLTYPE_ID as billtypeId, ub.CHR_NAME as billName,UC.EN_ID as enId, EIE.CHR_CODE as enCode, EIE.CHR_NAME as enName,
+			uc.PAYERID as payerid, uc.PAYER as payerName, uc.PAYERACCOUNT as payeraccount, uc.PAYERBANK as payerbank, uc.REMARK as remark, uc.CREATE_USER as createUser, SU.USER_NAME as userName,
+			UC.PM_ID as pmId,eup.CHR_NAME as pmName, UC.MAKEDATE as makedate,
+			CASE WHEN uc.RECEIVETYPE = 1 THEN( SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTIONDETAIL WHERE main_id = uc.CHR_ID)
+			ELSE(SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTION_GATHER_DETAIL WHERE main_id IN (SELECT CHR_ID FROM UNTAX_COLLECTION_GATHER WHERE COLLECT_ID = uc.CHR_ID))
+			END allmoney,
+			UC.RECEIVERID as receiverid,vur.ACCOUNT_NAME as receiver,vur.ACCOUNT_NO as receiveraccount,vur.BANK_NAME as receiverbank,uc.RECEIVETYPE as receivetype
+		FROM
+			UNTAX_COLLECTION uc,UNTAX_BILLNAME ub,ELE_INCOME_ENTERPRISE eie,ELE_UNTAXACCOUNT eu,SYS_USERMANAGE su, ELE_UNTAXPAYMODE eup,VW_UNTAX_RECEIVERACCOUNT vur
+		WHERE
+			uc.IS_DELETED=0 and uc.BILLTYPE_ID = ub.CHR_ID and UC.EN_ID = EIE.CHR_ID and uc.PAYERID = eu.CHR_ID(+) and uc.CREATE_USER = su.USER_ID and UC.PM_ID = eup.CHR_ID and UC.RECEIVERID = vur.CHR_ID
+			and uc.CHR_ID=#{chrId}
+	</select>
+
+
+
+	<select id="getMaxReqBillNo" resultType="String" parameterType="Collections">
+		SELECT
+			max(REQ_BILL_NO)
+		FROM
+			UNTAX_COLLECTION
+		WHERE
+			SUBSTR(REQ_BILL_NO,7,2) = SUBSTR(#{setYear},3,2)
+	</select>
+
+
+	<select id="getCollectionsByCondition" resultType="Collections" parameterType="java.util.HashMap">
+		SELECT
+		*
+		FROM (
+		SELECT ROWNUM AS rowno, ub.* FROM (
+		select
+			uc.CHECKEARNE as checkearne,
+			uc.CHR_ID as chrId, uc.BILL_NO as billNo, uc.BILLTYPE_ID as billtypeId,uc.EN_ID as enId,
+			uc.PAYERID as payerid, uc.PAYER as payerName, uc.REMARK as remark, uc.CREATE_USER as createUser,
+			UC.PM_ID as pmId,uc.MAKEDATE as makedate,uc.RECEIVETYPE as receivetype,
+			CASE WHEN uc.RECEIVETYPE = 1
+			THEN( SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTIONDETAIL WHERE main_id = uc.CHR_ID)
+			ELSE(SELECT SUM (CHARGEMONEY) FROM UNTAX_COLLECTION_GATHER_DETAIL WHERE main_id IN (SELECT CHR_ID FROM UNTAX_COLLECTION_GATHER WHERE COLLECT_ID = uc.CHR_ID))
+			END chargemoney,
+			vur.ACCOUNT_NO as receiveraccount,vur.BANK_NAME as receiverbank, vur.CHR_NAME as receiver,
+			CASE WHEN uc.BILL_NAME is null then ub.CHR_NAME
+			ELSE uc.BILL_NAME END billName,
+			CASE WHEN uc.EN_NAME is null then EIE.CHR_NAME
+			ELSE uc.EN_NAME END enName,
+			CASE WHEN uc.PM_NAME is null then eup.CHR_NAME
+			ELSE uc.PM_NAME END pmName,
+			CASE WHEN uc.USER_NAME is null then SU.USER_NAME
+			ELSE uc.USER_NAME END userName
+		from
+			UNTAX_COLLECTION uc,UNTAX_BILLNAME ub,ELE_INCOME_ENTERPRISE eie,ELE_UNTAXACCOUNT eu,SYS_USERMANAGE su, ELE_UNTAXPAYMODE eup, VW_UNTAX_RECEIVERACCOUNT vur
+		WHERE
+			uc.IS_DELETED=0 and uc.BILLTYPE_ID = ub.CHR_ID and UC.EN_ID = EIE.CHR_ID and uc.PAYERID = eu.CHR_ID(+) and uc.CREATE_USER = su.USER_ID and UC.PM_ID = eup.CHR_ID
+			AND vur.CHR_ID = uc.RECEIVERID and uc.ERASEFLAG=0
+		<if test="collections.payerName != null and collections.payerName != '' ">
+			AND uc.PAYER like CONCAT(CONCAT('%',#{collections.payerName}),'%')
+		</if>
+		<if test="collections.stateCode == '001'">
+			AND uc.CHECKEARNE=0 AND uc.CHECK_FLAG = 1
+		</if>
+		<if test="collections.stateCode == '002'">
+			AND uc.CHECKEARNE=1
+		</if>
+		<if test="collections.stateCode == '904'">
+			AND uc.PAYFLAG=0
+		</if>
+		<if test="collections.stateCode == '905'">
+			AND uc.PAYFLAG=1
+		</if>
+		<choose>
+			<when test="sort !=null and sort != ''">
+				ORDER BY ${sort} ${order}
+			</when>
+			<otherwise>
+				ORDER BY uc.CREATE_DATE desc
+			</otherwise>
+		</choose>
+		) ub where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ub
+		WHERE <![CDATA[ ub.rowno > #{startrow} ]]>
+	</select>
+
+	<!--核收数据管理分页-->
+	<select id="getCollectionsTotal" resultType="long" parameterType="Collections">
+		SELECT
+			count(uc.CHR_ID) as num
+		FROM
+			UNTAX_COLLECTION uc, SYS_USERMANAGE su, ELE_UNTAXACCOUNT eu
+		WHERE
+			uc.IS_DELETED = '0'  AND uc.CREATE_USER = su.USER_ID and uc.PAYERID = eu.CHR_ID(+)  and uc.ERASEFLAG=0
+		<if test="receiverid != null and receiverid != '' ">
+			AND RECEIVERID=#{receiverid}
+		</if>
+		<if test="payerName != null and payerName != '' ">
+			AND uc.PAYER like CONCAT(CONCAT('%',#{payerName}),'%')
+		</if>
+		<if test="stateCode == '001'">
+			AND uc.CHECKEARNE=0 AND uc.CHECK_FLAG = 1
+		</if>
+		<if test="stateCode == '002'">
+			AND uc.CHECKEARNE=1
+		</if>
+		<if test="stateCode == '904'">
+			AND uc.PAYFLAG=0
+		</if>
+		<if test="stateCode == '905'">
+			AND uc.PAYFLAG=1
+		</if>
+	</select>
+
+
+	<!-- 更新核收状态api-->
+	<update id="updateCheckEarne" parameterType="Collections">
+		UPDATE
+		UNTAX_COLLECTION
+		SET
+		CHECKEARNE=#{checkearne},CHECKEARNEDATE=#{checkearnedate}
+		<if test="billNo != null and billNo != '' ">
+			,BILL_NO=#{billNo}
+		</if>
+		WHERE
+		CHR_ID=#{chrId}
+	</update>
+</mapper>

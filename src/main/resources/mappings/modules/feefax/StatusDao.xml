@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.StatusDao">
+	<select id="get" resultType="Status" parameterType="Status">
+		SELECT
+			STATUS_ID,STATUS_NAME,STATUS_CODE,LAST_VER
+		FROM 
+			SYS_STATUS
+		WHERE
+			STATUS_ID=#{statusId}
+	</select>
+	
+	<select id="findAllList" resultType="Status" parameterType="Status">
+		SELECT
+			ss.STATUS_ID as statusId,ss.STATUS_NAME as statusName,ss.STATUS_CODE as statusCode,ss.LAST_VER as lastVer
+		FROM
+			SYS_STATUS ss
+		ORDER BY ss.STATUS_ID ASC
+	</select>
+
+	<select id="getStatusListByModuleId" resultType="Status" parameterType="Status">
+		SELECT
+			ss.STATUS_ID as statusId,ss.STATUS_NAME as statusName,ss.STATUS_CODE as statusCode,ss.LAST_VER as lastVer,
+			sms.DISPLAY_TITLE as displayTitle
+		FROM
+			SYS_STATUS ss, SYS_MODULE_STATUS sms
+		WHERE
+			sms.MODULE_ID=#{moduleId} AND sms.STATUS_ID = ss.STATUS_ID
+		ORDER BY sms.DISPLAY_ORDER ASC
+	</select>
+</mapper>

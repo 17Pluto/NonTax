@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.EnterpriseDao">
+    <select id="get" resultType="Enterprise" parameterType="Enterprise">
+        SELECT
+            ee.CHR_ID as chrId, ee.CHR_CODE as chrCode,ee.DISP_CODE as dispCode,ee.CHR_NAME as chrName,ee.LEVEL_NUM as levelNum,ee.ENABLED as enabled,
+            ee.IS_DELETED as isDeleted,ee.IS_LEAF as isLeaf, ee.PARENT_ID as parentId, ee.PARENT_NAME as parentName,EDK.CHR_NAME as divKind,ee.IS_REFORM as isReform,
+            ee.START_DATE as startDate, ee.END_DATE as endDate,ee.SECRETDEGREE as secretdegree,ee.ISBUDGET as isbudget,ee.LULOAD_MOD as luloadMod,
+            ee.EN_CF_MOD as enCfMod,ee.EN_TYPE as enType,ee.DIV_KIND_ID as divKindId
+        FROM
+            ELE_ENTERPRISE ee,ELE_DIV_KIND edk
+        WHERE
+            ee.IS_DELETED=0 AND ee.DIV_KIND_ID=edk.CHR_ID(+)
+            <if test="chrId != null and chrId != '' ">
+                AND ee.CHR_ID=#{chrId}
+            </if>
+            <if test="chrCode != null and chrCode != '' ">
+                AND ee.CHR_CODE=#{chrCode}
+            </if>
+    </select>
+
+    <insert id="insert" parameterType="Enterprise" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+            SELECT ENTERPRISE_S.NEXTVAL FROM DUAL
+        </selectKey>
+            INSERT INTO
+                ELE_ENTERPRISE(SET_YEAR,CHR_ID,CHR_CODE,DISP_CODE,CHR_NAME,LEVEL_NUM,
+                IS_LEAF,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,
+                LATEST_OP_USER,LAST_VER,PARENT_ID,RG_CODE,ENABLED,PARENT_NAME,IS_REFORM,
+                START_DATE,END_DATE,SECRETDEGREE,ISBUDGET,LULOAD_MOD,EN_CF_MOD,EN_TYPE,DIV_KIND_ID)
+            VALUES
+                (#{setYear},#{chrId},#{chrCode},#{dispCode},#{chrName},#{levelNum},
+                #{isLeaf},#{createDate},#{createUser},#{latestOpDate},
+                #{latestOpUser},#{lastVer},#{parentId},#{rgCode},#{enabled},#{parentName},#{isReform},
+                #{startDate},#{endDate},#{secretdegree},#{isbudget},#{luloadMod},#{enCfMod},#{enType},#{divKindId})
+    </insert>
+
+    <delete id="delete" parameterType="Enterprise" >
+		UPDATE
+			ELE_ENTERPRISE
+		SET
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete>
+
+    <update id="update" parameterType="Enterprise">
+        UPDATE
+            ELE_ENTERPRISE
+        <set>
+            <if test="setYear != null and setYear != '' ">
+                SET_YEAR=#{setYear},
+            </if>
+            <if test="chrCode != null and chrCode != '' ">
+                CHR_CODE=#{chrCode},
+            </if>
+            <if test="dispCode != null and dispCode != '' ">
+                DISP_CODE=#{dispCode},
+            </if>
+            <if test="chrName != null and chrName != '' ">
+                CHR_NAME=#{chrName},
+            </if>
+            <if test="levelNum != null and levelNum != '' ">
+                LEVEL_NUM=#{levelNum},
+            </if>
+            <if test="parentId != null and parentId != '' ">
+                PARENT_ID=#{parentId},
+            </if>
+            <if test="parentName != null and parentName != '' ">
+                PARENT_NAME=#{parentName},
+            </if>
+            <if test="isReform != null and isReform != '' ">
+                IS_REFORM=#{isReform},
+            </if>
+            <if test="secretdegree != null and secretdegree != '' ">
+                SECRETDEGREE=#{secretdegree},
+            </if>
+            <if test="luloadMod != null and luloadMod != '' ">
+                LULOAD_MOD=#{luloadMod},
+            </if>
+            <if test="enCfMod != null and enCfMod != '' ">
+                EN_CF_MOD=#{enCfMod},
+            </if>
+            <if test="enType != null and enType != '' ">
+                EN_TYPE=#{enType},
+            </if>
+            <if test="divKindId != null and divKindId != '' ">
+                DIV_KIND_ID=#{divKindId},
+            </if>
+            <if test="startDate != null and startDate != '' ">
+                START_DATE=#{startDate},
+            </if>
+            <if test="endDate != null and endDate != '' ">
+                END_DATE=#{endDate},
+            </if>
+            ENABLED=#{enabled},
+            ISBUDGET=#{isbudget},
+        </set>
+        WHERE
+        CHR_ID=#{chrId}
+    </update>
+
+    <select id="getEnterpriseListByChrId" resultType="Enterprise" parameterType="Enterprise">
+        SELECT
+            ee.CHR_ID as chrId, ee.CHR_CODE as chrCode,ee.DISP_CODE as dispCode,ee.CHR_NAME as chrName,ee.PARENT_ID as parentId
+        FROM
+            ELE_ENTERPRISE ee
+        WHERE
+            ee.IS_DELETED = '0'
+            start with ee.CHR_ID = #{chrId} connect by prior ee.PARENT_ID = ee.CHR_ID
+    </select>
+
+	<select id="findAllList" resultType="Enterprise" parameterType="Enterprise">
+		SELECT
+			ee.CHR_ID as chrId, ee.CHR_CODE as chrCode,ee.DISP_CODE as dispCode,ee.CHR_NAME as chrName,ee.LEVEL_NUM as levelNum,ee.ENABLED as enabled,
+			ee.IS_DELETED as isDeleted,ee.IS_LEAF as isLeaf, ee.PARENT_ID as parentId, ee.PARENT_NAME as parentName,EDK.CHR_NAME as divKind,ee.IS_REFORM as isReform,
+			ee.START_DATE as startDate, ee.END_DATE as endDate,ee.SECRETDEGREE as secretdegree,ee.ISBUDGET as isbudget,ee.LULOAD_MOD as luloadMod,
+			ee.EN_CF_MOD as enCfMod,ee.EN_TYPE as enType,ee.DIV_KIND_ID as divKindId
+		FROM
+			ELE_ENTERPRISE ee,ELE_DIV_KIND edk
+		WHERE
+			ee.IS_DELETED = '0' AND EE.DIV_KIND_ID=EDK.CHR_ID(+)
+			<if test="setYear != null and setYear != '' ">
+				AND ee.SET_YEAR = #{setYear}
+			</if>
+			<if test="chrId != null and chrId != '' ">
+				AND ee.CHR_ID=#{chrId}
+			</if>
+			<if test="parentId != null and parentId != '' ">
+				AND ee.PARENT_ID=#{parentId}
+			</if>
+		ORDER BY ee.CHR_CODE ASC
+	</select>
+
+
+	<select id="getEnterpriseListTotal" resultType="long" parameterType="Enterprise">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			ELE_ENTERPRISE
+		WHERE
+			IS_DELETED = '0'
+			<if test="setYear != null and setYear != '' ">
+				AND SET_YEAR = #{setYear}
+			</if>
+			<if test="chrId != null and chrId != '' ">
+				start with CHR_ID = #{chrId} connect by prior CHR_ID = PARENT_ID
+			</if>
+	</select>
+
+	<select id="getEnterpriseListByCondition" resultType="Enterprise" parameterType="java.util.HashMap">
+		SELECT
+			*
+		FROM (
+		    SELECT ROWNUM AS rowno, se.* FROM (
+				SELECT
+					ee.CHR_ID as chrId, ee.CHR_CODE as chrCode,ee.DISP_CODE as dispCode,ee.CHR_NAME as chrName,ee.LEVEL_NUM as levelNum,ee.ENABLED as enabled,
+					ee.IS_DELETED as isDeleted,ee.IS_LEAF as isLeaf, nvl(ee.PARENT_ID, 'allTree') as parentId, EDK.CHR_NAME as divKind,ee.IS_REFORM as isReform,
+					ee.START_DATE as startDate, ee.END_DATE as endDate,ee.SECRETDEGREE as secretdegree,ee.ISBUDGET as isbudget,ee.LULOAD_MOD as luloadMod,
+					ee.EN_CF_MOD as enCfMod,ee.EN_TYPE as enType,ee.DIV_KIND_ID as divKindId, nvl(ee1.CHR_NAME, '全部') as parentName
+				FROM
+					ELE_ENTERPRISE ee,ELE_DIV_KIND edk,ELE_ENTERPRISE ee1
+				WHERE
+					ee.IS_DELETED = '0' AND ee.DIV_KIND_ID=edk.CHR_ID(+) and ee.PARENT_ID = ee1.CHR_ID(+)
+				<if test="enterprise.setYear != null and enterprise.setYear != '' ">
+					AND ee.SET_YEAR = #{enterprise.setYear}
+				</if>
+                <if test="enterprise.chrId != null and enterprise.chrId != '' ">
+                    start with ee.CHR_ID = #{enterprise.chrId} connect by prior ee.CHR_ID = ee.PARENT_ID
+                </if>
+				<choose>
+					<when test="sort !=null and sort != ''">
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY ee.DISP_CODE ASC
+					</otherwise>
+				</choose>
+			) se where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) se
+		WHERE <![CDATA[ se.rowno > #{startrow} ]]>
+	</select>
+
+
+
+</mapper>

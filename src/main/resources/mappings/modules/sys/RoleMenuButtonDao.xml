@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.framework.modules.dao.RoleMenuButtonDao">
+	<insert id="insert" parameterType="RoleMenuButton" >
+		INSERT INTO
+			SYS_ROLE_MENU_BUTTON(ROLE_ID,MENU_ID,SET_YEAR,LAST_VER,RG_CODE,BUTTON_ID)
+		VALUES
+			(#{roleId},#{menuId},#{setYear},#{lastVer},#{rgCode},#{buttonId})
+	</insert>
+
+	<delete id="delete" parameterType="RoleMenuButton" >
+		DELETE FROM
+			SYS_ROLE_MENU_BUTTON
+		WHERE
+			ROLE_ID=#{roleId}
+		<if test="menuId != null and menuId != '' ">
+			AND MENU_ID = #{menuId}
+		</if>
+		<if test="buttonId != null and buttonId != '' ">
+			AND BUTTON_ID = #{buttonId}
+		</if>
+	</delete>
+
+
+	<select id="findAllList" resultType="RoleMenuButton" parameterType="RoleMenuButton">
+		SELECT
+			ROLE_ID,MENU_ID,SET_YEAR,LAST_VER,RG_CODE,BUTTON_ID
+		FROM
+			SYS_ROLE_MENU_BUTTON
+		WHERE
+			ROLE_ID=#{roleId}
+	</select>
+</mapper>

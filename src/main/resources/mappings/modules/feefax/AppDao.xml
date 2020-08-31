@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.AppDao">
+	<select id="get" resultType="App" parameterType="String">
+		SELECT
+			SYS_ID,SYS_NAME,SYS_DESC
+		FROM 
+			SYS_APP
+		WHERE
+			ENABLED=1
+	</select>
+	
+	<select id="findAllList" resultType="App" parameterType="App">
+		SELECT
+			sa.SYS_ID as sysId,sa.SYS_NAME as sysName,sa.SYS_DESC as sysDesc
+		FROM
+			SYS_APP sa
+		WHERE
+			sa.ENABLED = 1
+		ORDER BY sa.SYS_ID ASC
+	</select>
+</mapper>

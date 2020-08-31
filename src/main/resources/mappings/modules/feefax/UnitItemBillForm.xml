@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.UnitItemBillFormDao">
+	<select id="get" resultType="UnitItemBillForm" parameterType="UnitItemBillForm">
+		SELECT
+			CHR_ID,MAIN_ID,BILLTYPE_ID,ORDER_NUM,LAST_VER,MAX_NUM
+
+		FROM 
+			UNTAX_UNITITEM_BILLFORM
+
+	</select>
+	
+	<insert id="insert" parameterType="UnitItemBillForm" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BILLFORM_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_UNITITEM_BILLFORM(CHR_ID,MAIN_ID,BILLTYPE_ID,ORDER_NUM,LAST_VER,MAX_NUM)
+		VALUES
+			(#{chrId},#{mainId},#{billtypeId},#{orderNum},#{lastVer},#{maxNum,jdbcType=VARCHAR})
+	</insert>
+	
+	<delete id="delete" parameterType="UnitItemBillForm" >
+		DELETE FROM
+			UNTAX_UNITITEM_BILLFORM
+		WHERE
+			MAIN_ID=#{mainId}
+	</delete> 
+	
+	<update id="update" parameterType="UnitItemBillForm">
+		UPDATE
+			UNTAX_UNITITEM_BILLFORM
+		SET
+			CHR_ID=#{chrId},MAIN_ID=#{mainId},BILLTYPE_ID=#{billtypeId},ORDER_NUM=#{orderNum},LAST_VER=#{lastVer},MAX_NUM=#{maxNum}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+	
+	
+		
+	<select id="getUnitItemBillFormListTotal" resultType="long" parameterType="UnitItemBillForm">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_UNITITEM_BILLFORM
+	</select>
+	
+	<select id="getUnitItemBillFormListByCondition" resultType="com.xcmis.feefax.modules.entity.UnitItemBillForm" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, vui.* FROM (
+				SELECT
+					CHR_ID,MAIN_ID,BILLTYPE_ID,ORDER_NUM,LAST_VER,MAX_NUM
+				FROM
+					UNTAX_UNITITEM_BILLFORM vui
+		  ) vui where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) vui
+		WHERE <![CDATA[ vui.rowno > #{startrow} ]]>
+	</select>
+
+	<select id="findAllList" resultType="UnitItemBillForm" parameterType="UnitItemBillForm">
+		SELECT
+			CHR_ID,MAIN_ID,BILLTYPE_ID,ORDER_NUM,LAST_VER,MAX_NUM
+		FROM
+			UNTAX_UNITITEM_BILLFORM
+		<where>
+			<if test="mainId != null and mainId != '' ">
+				MAIN_ID=#{mainId}
+			</if>
+		</where>
+	</select>
+</mapper>

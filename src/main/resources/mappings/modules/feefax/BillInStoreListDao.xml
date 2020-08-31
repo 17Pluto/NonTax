@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BillInStoreListDao">
+	<select id="get" resultType="BillInStoreList" parameterType="String">
+		SELECT
+			CHR_ID,MAIN_ID,UNTAX_BILLNAME_ID,UNTAX_BILLPRICE_ID,MEASURE,MULS,PRICE,BGN_BILL_NO,END_BILL_NO,STORE_NUM,
+			REMARK,IS_DELETED,MONEY,BOOKNUM,OCCUR_TIME,CANUSEDATE,IS_BILL_BACK,SOURCE_ID
+		FROM
+			UNTAX_BILLINSTORE_LIST
+		WHERE
+			IS_DELETED=0
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+	</select>
+
+	<insert id="insert" parameterType="BillInStoreList" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BILLINSTORELIST_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+				UNTAX_BILLINSTORE_LIST(CHR_ID,MAIN_ID,UNTAX_BILLNAME_ID,BGN_BILL_NO,END_BILL_NO,STORE_NUM,
+				REMARK,IS_DELETED,BOOKNUM,OCCUR_TIME,IS_BILL_BACK
+				)
+		VALUES
+			(#{chrId},#{mainId},#{untaxBillnameId},
+				#{bgnBillNo},#{endBillNo},#{storeNum},#{remark,jdbcType=VARCHAR},#{isDeleted},
+				#{booknum},#{occurTime},#{isBillBack}
+			)
+	</insert>
+
+	<delete id="delete" parameterType="BillInStoreList" >
+		UPDATE
+			UNTAX_BILLINSTORE_LIST
+		SET
+			IS_DELETED = '1'
+		WHERE
+			MAIN_ID=#{mainId}
+	</delete>
+
+	<update id="update" parameterType="BillInStoreList">
+		UPDATE
+			UNTAX_BILLINSTORE_LIST
+		SET
+			MAIN_ID=#{mainId},UNTAX_BILLNAME_ID=#{untaxBillnameId},
+			BGN_BILL_NO=#{bgnBillNo},END_BILL_NO=#{endBillNo},STORE_NUM=#{storeNum},REMARK=#{remark,jdbcType=VARCHAR},
+			BOOKNUM=#{booknum},OCCUR_TIME=#{occurTime},isBillBack=#{isBillBack}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+	<select id="getBillInStoreListListTotal" resultType="long" parameterType="BillInStoreList">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_BILLINSTORE_LIST
+		WHERE
+			IS_DELETED = '0'
+	</select>
+
+	<select id="getBillInStoreListListByCondition" resultType="com.xcmis.feefax.modules.entity.BillInStoreList" parameterType="java.util.HashMap">
+		SELECT
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ub.* FROM (
+				SELECT
+					CHR_ID,MAIN_ID,UNTAX_BILLNAME_ID,UNTAX_BILLPRICE_ID,MEASURE,MULS,PRICE,BGN_BILL_NO,END_BILL_NO,STORE_NUM,
+					REMARK,IS_DELETED,MONEY,BOOKNUM,OCCUR_TIME,CANUSEDATE,IS_BILL_BACK,SOURCE_ID
+				FROM
+					UNTAX_BILLINSTORE_LIST ub
+				WHERE
+					IS_DELETED=0
+		  ) ub where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ub
+		WHERE <![CDATA[ ub.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="BillInStoreList" parameterType="BillInStoreList">
+		SELECT
+			ubl.CHR_ID as chrId,ubl.MAIN_ID as mainId,ubl.UNTAX_BILLNAME_ID as untaxBillnameId,ubl.UNTAX_BILLPRICE_ID as untaxBillpriceId,
+			ubl.MEASURE as measure,ubl.MULS as muls,ubl.PRICE as price,ubl.BGN_BILL_NO as bgnBillNo,ubl.END_BILL_NO as endBillNo,
+			ubl.STORE_NUM as storeNum,ubl.REMARK as remark,ubl.IS_DELETED as isDeleted,ubl.MONEY as money,
+			ubl.BOOKNUM as booknum,ubl.OCCUR_TIME as occurTime,ubl.CANUSEDATE as canusedate,ubl.IS_BILL_BACK as isBillBack,ubl.SOURCE_ID as sourceId,
+			ub.CHR_NAME as untaxBillname
+		FROM
+			UNTAX_BILLINSTORE_LIST ubl, UNTAX_BILLNAME ub
+		WHERE
+			ubl.IS_DELETED = 0
+		<if test="mainId != null and mainId != '' ">
+			AND ubl.MAIN_ID = #{mainId}
+		</if>
+			AND ubl.UNTAX_BILLNAME_ID = ub.CHR_ID
+		<if test="untaxBillnameId != null and untaxBillnameId != '' ">
+			AND ubl.UNTAX_BILLNAME_ID = #{untaxBillnameId}
+		</if>
+	</select>
+
+	<select id="getBillInStoreListByUntaxBillnameId" resultType="BillInStoreList" parameterType="BillInStoreList">
+		SELECT
+			ubl.CHR_ID as chrId,ubl.MAIN_ID as mainId,ubl.UNTAX_BILLNAME_ID as untaxBillnameId,ubl.UNTAX_BILLPRICE_ID as untaxBillpriceId,
+			ubl.MEASURE as measure,ubl.MULS as muls,ubl.PRICE as price,ubl.BGN_BILL_NO as bgnBillNo,ubl.END_BILL_NO as endBillNo,
+			ubl.STORE_NUM as storeNum,ubl.REMARK as remark,ubl.IS_DELETED as isDeleted,ubl.MONEY as money,
+			ubl.BOOKNUM as booknum,ubl.OCCUR_TIME as occurTime,ubl.CANUSEDATE as canusedate,ubl.IS_BILL_BACK as isBillBack,ubl.SOURCE_ID as sourceId,
+			ub.CHR_NAME as untaxBillname,ub.PACKNUM as packnum, ub.BILL_LENGTH as billLength
+		FROM
+			UNTAX_BILLINSTORE_LIST ubl, UNTAX_BILLNAME ub, UNTAX_BILLINSTORE ubs
+		WHERE
+			ubl.IS_DELETED = 0 AND ubs.IS_DELETED = 0 AND ubs.CHR_ID = ubl.MAIN_ID AND ubs.ISEND=1
+			AND ubl.UNTAX_BILLNAME_ID = ub.CHR_ID
+		<if test="untaxBillnameId != null and untaxBillnameId != '' ">
+			AND ubl.UNTAX_BILLNAME_ID = #{untaxBillnameId}
+		</if>
+		order by ubl.BGN_BILL_NO
+	</select>
+</mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.RuleDao">
+	<select id="get" resultType="Rule" parameterType="Rule">
+		SELECT
+			RULE_ID,RULE_CODE,RULE_NAME,REMARK,SET_YEAR,ENABLED,RULE_CLASSIFY,SYS_REMARK,RIGHT_TYPE,
+			CREATE_USER,CREATE_DATE,LATEST_OP_USER,LATEST_OP_DATE,LAST_VER,RG_CODE
+		FROM 
+			SYS_RULE
+		WHERE
+			RULE_ID=#{ruleId}
+	</select>
+	
+	<select id="findAllList" resultType="Rule" parameterType="Rule">
+		SELECT
+			sr.RULE_ID as ruleId,sr.RULE_CODE as ruleCode,sr.RULE_NAME as ruleName,sr.REMARK as remark,
+			sr.SET_YEAR as setYear,sr.ENABLED as enabled,sr.LAST_VER as lastVer
+		FROM
+			SYS_RULE sr
+		ORDER BY sr.RULE_CODE ASC
+	</select>
+
+	<insert id="insert" parameterType="Rule" >
+		<selectKey resultType="Long" order="BEFORE" keyProperty="ruleId">
+			SELECT RULE_S.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO
+			SYS_RULE(RULE_ID,RULE_CODE,RULE_NAME,ENABLED,REMARK,SET_YEAR,RG_CODE,LAST_VER)
+		VALUES
+			(#{ruleId},#{ruleCode},#{ruleName},#{enabled},#{remark},#{setYear},#{rgCode},#{lastVer})
+	</insert>
+
+	<delete id="delete" parameterType="Rule" >
+		DELETE FROM
+			SYS_RULE
+		WHERE
+			RULE_ID=#{ruleId}
+	</delete>
+
+	<update id="update" parameterType="Rule">
+		UPDATE
+			SYS_RULE
+		<set>
+			RULE_CODE=#{ruleCode},
+			RULE_NAME=#{ruleName},
+			LAST_VER=#{lastVer},
+		</set>
+		WHERE
+			RULE_ID=#{ruleId}
+	</update>
+</mapper>

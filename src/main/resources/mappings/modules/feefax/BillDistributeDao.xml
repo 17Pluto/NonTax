@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.BillDistributeDao">
+	<select id="get" resultType="BillDistribute" parameterType="BillDistribute">
+		SELECT
+			SET_YEAR,CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,IS_DELETED,LATEST_OP_USER,RG_CODE,BILLSERIAL_NO,
+			EN_ID,BILLDISTRIBUTER,ORDER_NUM,REMARK,BELONG_ORG,ORG_TYPE,DISTRIBUTE_DATE,RCID,
+			ISEND,LAST_VER,IS_LEVELBILL,IS_FROMLEVEL,IS_BILL_BACK
+		FROM
+			UNTAX_0_BILLDISTRIBUTE
+		WHERE
+			IS_DELETED=0
+			<if test="chrId != null and chrId != '' ">
+				AND CHR_ID=#{chrId}
+			</if>
+	</select>	
+	
+	<insert id="insert" parameterType="BillDistribute" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT BILLDISTRIBUTE_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_0_BILLDISTRIBUTE(
+				SET_YEAR,CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,IS_DELETED,LATEST_OP_USER,RG_CODE,BILLSERIAL_NO,
+				EN_ID,BILLDISTRIBUTER,ORDER_NUM,REMARK,DISTRIBUTE_DATE,ISEND,LAST_VER,STATE_CODE
+			)
+		VALUES
+			(#{setYear},#{chrId},#{createDate},#{createUser},#{latestOpDate},#{isDeleted},#{latestOpUser},
+				#{rgCode},#{billserialNo},#{enId},#{billdistributer},#{orderNum},#{remark},#{distributeDate},
+				#{isend},#{lastVer},#{stateCode}
+			)
+	</insert>
+
+
+	<delete id="delete" parameterType="BillDistribute" >
+		UPDATE 
+			UNTAX_0_BILLDISTRIBUTE
+		SET 
+			IS_DELETED = '1'
+		WHERE
+			CHR_ID=#{chrId}
+	</delete>
+
+
+	<update id="update" parameterType="BillDistribute">
+		UPDATE
+			UNTAX_0_BILLDISTRIBUTE
+		SET
+			LATEST_OP_DATE=#{latestOpDate,jdbcType=VARCHAR},LATEST_OP_USER=#{latestOpUser,jdbcType=VARCHAR},
+			EN_ID=#{enId,jdbcType=VARCHAR},BILLDISTRIBUTER=#{billdistributer,jdbcType=VARCHAR},REMARK=#{remark,jdbcType=VARCHAR},DISTRIBUTE_DATE=#{distributeDate,jdbcType=VARCHAR},
+			LAST_VER=#{lastVer}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+
+	<select id="getBillDistributeListTotal" resultType="long" parameterType="BillDistribute">
+		SELECT
+			count(ub.CHR_ID) as num
+		FROM
+			UNTAX_0_BILLDISTRIBUTE ub, SYS_USERMANAGE su
+		WHERE
+			ub.IS_DELETED = 0 AND ub.CREATE_USER = su.USER_ID(+)
+		<if test="enId != null and enId != '' ">
+			AND EN_ID = #{enId}
+		</if>
+		<if test="stateCode != null and stateCode != '' and stateCode != '000'">
+			AND ub.STATE_CODE = #{stateCode}
+		</if>
+		<if test="startDistributeDate != null and startDistributeDate != '' ">
+			AND ub.DISTRIBUTE_DATE &gt;= #{startDistributeDate}
+		</if>
+		<if test="endDistributeDate != null and endDistributeDate != '' ">
+			AND ub.DISTRIBUTE_DATE &lt;= #{endDistributeDate}
+		</if>
+		<if test="userName != null and userName != '' ">
+			AND su.USER_NAME like CONCAT(CONCAT('%',#{userName}),'%')
+		</if>
+		<if test="untaxBillnameId != null and untaxBillnameId != '' ">
+			AND ub.CHR_ID in(select main_id from UNTAX_0_BILLDISTRIBUTE_LIST where UNTAX_BILLNAME_ID=#{untaxBillnameId})
+		</if>
+	</select>
+
+
+	<select id="getBillDistributeListByCondition" resultType="BillDistribute" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ub.* FROM (
+				SELECT
+					ub.SET_YEAR as setYear,ub.CHR_ID as chrId,ub.CREATE_DATE as createDate,ub.CREATE_USER as createUser,ub.LATEST_OP_DATE as latestOpDate,ub.IS_DELETED as isdeleted,
+					ub.LATEST_OP_USER as latestOpUser,ub.RG_CODE as rgCode,ub.BILLSERIAL_NO as billserialNo,ub.EN_ID as enId,ub.BILLDISTRIBUTER as billdistributer,ub.ORDER_NUM as orderNum,
+					ub.REMARK as remark,ub.BELONG_ORG as belongOrg,ub.ORG_TYPE as orgType,ub.DISTRIBUTE_DATE as distributeDate,ub.RCID as rcid,ub.ISEND as isend,eie.CHR_NAME as enName,
+					su.USER_NAME as userName
+				FROM
+					UNTAX_0_BILLDISTRIBUTE ub, ELE_INCOME_ENTERPRISE eie, SYS_USERMANAGE su
+				WHERE
+					ub.IS_DELETED = 0 AND ub.EN_ID = eie.CHR_ID(+) AND ub.CREATE_USER = su.USER_ID(+)
+				<if test="billDistribute.enId != null and billDistribute.enId != '' ">
+					AND ub.EN_ID = #{billDistribute.enId}
+				</if>
+				<if test="billDistribute.stateCode != null and billDistribute.stateCode != '' and billDistribute.stateCode != '000'">
+					AND ub.STATE_CODE = #{billDistribute.stateCode}
+				</if>
+				<if test="billDistribute.startDistributeDate != null and billDistribute.startDistributeDate != '' ">
+					AND ub.DISTRIBUTE_DATE &gt;= #{billDistribute.startDistributeDate}
+				</if>
+				<if test="billDistribute.endDistributeDate != null and billDistribute.endDistributeDate != '' ">
+					AND ub.DISTRIBUTE_DATE &lt;= #{billDistribute.endDistributeDate}
+				</if>
+				<if test="billDistribute.userName != null and billDistribute.userName != '' ">
+					AND su.USER_NAME like CONCAT(CONCAT('%',#{billDistribute.userName}),'%')
+				</if>
+				<if test="billDistribute.untaxBillnameId != null and billDistribute.untaxBillnameId != '' ">
+					AND ub.CHR_ID in(select main_id from UNTAX_0_BILLDISTRIBUTE_LIST where UNTAX_BILLNAME_ID=#{billDistribute.untaxBillnameId})
+				</if>
+				<choose>
+					<when test="sort !=null and sort != ''">
+						ORDER BY ${sort} ${order}
+					</when>
+					<otherwise>
+						ORDER BY ub.CREATE_DATE desc
+					</otherwise>
+				</choose>
+		) ub where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ub
+		WHERE <![CDATA[ ub.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="BillDistribute" parameterType="BillDistribute">
+		SELECT
+			SET_YEAR,CHR_ID,CREATE_DATE,CREATE_USER,LATEST_OP_DATE,IS_DELETED,LATEST_OP_USER,RG_CODE,BILLSERIAL_NO,
+			EN_ID,BILLDISTRIBUTER,ORDER_NUM,REMARK,BELONG_ORG,ORG_TYPE,DISTRIBUTE_DATE,RCID,
+			ISEND,LAST_VER,IS_LEVELBILL,IS_FROMLEVEL,IS_BILL_BACK
+		FROM
+			UNTAX_0_BILLDISTRIBUTE
+		WHERE
+			IS_DELETED=0
+	</select>
+
+	<select id="getMaxNo" resultType="String" parameterType="BillDistribute">
+		SELECT
+			max(BILLSERIAL_NO) as billserialNo
+		FROM
+			UNTAX_0_BILLDISTRIBUTE
+		WHERE
+			BILLSERIAL_NO LIKE CONCAT(CONCAT('%',#{billserialNo}),'%')
+	</select>
+
+
+	<update id="checkBillDistribute" parameterType="BillDistribute">
+		UPDATE
+			UNTAX_0_BILLDISTRIBUTE
+		SET
+			ISEND=#{isend},STATE_CODE=#{stateCode}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+
+
+	<select id="testFindAllList" resultType="BillDistribute" parameterType="BillDistribute">
+		SELECT
+			UBL.BGN_BILL_NO as bgnBillNo,
+			UBL.END_BILL_NO as endBillNo,
+			UBL.UNTAX_BILLNAME_ID as untaxBillnameId,
+			ubd.EN_ID as enId,
+			UBD.BILLDISTRIBUTER as billdistributer,
+			UBD.CHR_ID as chrId
+		FROM
+			UNTAX_0_BILLDISTRIBUTE_LIST ubl,
+			UNTAX_0_BILLDISTRIBUTE ubd
+		WHERE
+			ubl.IS_DELETED = 0
+		AND ubl.MAIN_ID = ubd.CHR_ID
+		AND ubd.IS_DELETED = 0
+		AND (
+			UBL.UNTAX_BILLNAME_ID = '{24F9CCE1-517A-11E7-BBFD-EC2E496693B1}'
+			OR UBL.UNTAX_BILLNAME_ID = '{DF7A7B22-840C-11E8-941F-CCC1F0D94D36}'
+		)
+		ORDER BY ubl.BGN_BILL_NO
+	</select>
+</mapper>

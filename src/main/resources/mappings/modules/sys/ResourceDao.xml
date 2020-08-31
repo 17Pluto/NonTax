@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.framework.modules.dao.ResourceDao">
+	<select id="getResourceListByUserName" resultType="Resource" parameterType="Resource">
+		SELECT
+			sr.ID as id, SR.RESOURCE_NAME as resourceName FROM SYS_USERMANAGE su, SYS_USER_ROLE sur, SYS_ROLE_RESOURCE srr, SYS_RESOURCE sr
+		WHERE
+			SU.USER_ID = SUR.USER_ID AND SUR.ROLE_ID = SRR.ROLE_ID AND SRR.RESOURCE_ID = SR.ID AND SR.STATUS = 'N' AND SR.TYPE_ID = 1 AND SU.USER_NAME = #{userName}
+		ORDER BY
+			SR.ORDER_NO
+	</select>
+	
+
+</mapper>

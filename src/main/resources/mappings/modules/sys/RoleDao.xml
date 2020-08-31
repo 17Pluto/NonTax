@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.framework.modules.dao.RoleDao">
+	<select id="get" resultType="Role" parameterType="Role">
+		SELECT 
+			ROLE_ID,ROLE_CODE,ROLE_NAME,USER_SYS_ID,ENABLED,ROLE_TYPE,
+			LAST_VER,RG_CODE,SET_YEAR
+		FROM 
+			SYS_ROLE
+		WHERE
+			ROLE_ID=#{roleId}
+	</select>	
+	
+	<insert id="insert" parameterType="Role" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="roleId">
+	       	SELECT ROLE_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			SYS_ROLE(ROLE_ID,ROLE_CODE,ROLE_NAME,USER_SYS_ID,ENABLED,LAST_VER,RG_CODE,SET_YEAR)
+		VALUES
+			(#{roleId},#{roleCode},#{roleName},#{userSysId},#{enabled},#{lastVer},#{rgCode},#{setYear})
+	</insert> 
+	
+	<delete id="delete" parameterType="Role" >
+		DELETE FROM
+			SYS_ROLE
+		WHERE
+			ROLE_ID=#{roleId}
+	</delete> 
+	
+	<update id="update" parameterType="Role">
+		UPDATE 
+			SYS_ROLE
+		SET 
+			ROLE_CODE=#{roleCode},ROLE_NAME=#{roleName},USER_SYS_ID=#{userSysId},ENABLED=#{enabled},LAST_VER=#{lastVer}
+		WHERE 
+			ROLE_ID=#{roleId}
+	</update>
+
+	
+	<select id="findAllList" resultType="Role" parameterType="Role">
+		SELECT
+			ROLE_ID,ROLE_CODE,ROLE_NAME,USER_SYS_ID,ENABLED,ROLE_TYPE,
+			LAST_VER,RG_CODE,SET_YEAR
+		FROM
+			SYS_ROLE
+		WHERE
+			ENABLED = 1
+		<if test="userSysId != null and userSysId != '' ">
+			AND USER_SYS_ID=#{userSysId}
+		</if>
+	</select>
+</mapper>

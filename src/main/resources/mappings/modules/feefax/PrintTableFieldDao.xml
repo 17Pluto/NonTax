@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xcmis.feefax.modules.dao.PrintTableFieldDao">
+	<select id="get" resultType="PrintTableField" parameterType="PrintTableField">
+		SELECT
+			CHR_ID,MAIN_ID,FIELD_CODE,FIELD_NAME,FIELD_TOP,FIELD_LEFT,FIELD_HEIGHT,FIELD_WIDTH,IS_SHOW
+		FROM
+			UNTAX_PRINT_TABLE_FIELD
+		WHERE
+			CHR_ID=#{chrId}
+	</select>	
+	
+	<insert id="insert" parameterType="PrintTableField" >
+        <selectKey resultType="String" order="BEFORE" keyProperty="chrId">
+	       	SELECT PRINTTABLEFIELD_S.NEXTVAL FROM DUAL
+	    </selectKey>
+		INSERT INTO
+			UNTAX_PRINT_TABLE_FIELD(CHR_ID,MAIN_ID,FIELD_CODE,FIELD_NAME,FIELD_TOP,FIELD_LEFT,FIELD_HEIGHT,FIELD_WIDTH
+		)
+		VALUES
+			(#{chrId},#{mainId},#{fieldCode},#{fieldName},#{fieldTop},#{fieldLeft},#{fieldHeight},#{fieldWidth}
+			)
+	</insert> 
+	
+	<delete id="delete" parameterType="PrintTableField" >
+		DELETE FROM
+			UNTAX_PRINT_TABLE_FIELD
+		WHERE
+			MAIN_ID=#{mainId}
+	</delete>
+	
+	<update id="update" parameterType="PrintTableField">
+		UPDATE
+			UNTAX_PRINT_TABLE_FIELD
+		SET
+			CHR_ID=#{chrId},MAIN_ID=#{mainId},FIELD_CODE=#{fieldCode},FIELD_NAME=#{fieldName},FIELD_TOP=#{fieldTop},FIELD_LEFT=#{fieldLeft},FIELD_HEIGHT=#{fieldHeight},FIELD_WIDTH=#{fieldWidth},IS_SHOW=#{isShow}
+		WHERE
+			CHR_ID=#{chrId}
+	</update>
+		
+	<select id="getPrintTableFieldListTotal" resultType="long" parameterType="PrintTableField">
+		SELECT
+			count(CHR_ID) as num
+		FROM
+			UNTAX_PRINT_TABLE_FIELD
+	</select>
+	
+	<select id="getPrintTableFieldListByCondition" resultType="PrintTableField" parameterType="java.util.HashMap">
+		SELECT 
+			*
+		 FROM (
+			SELECT ROWNUM AS rowno, ub.* FROM (
+				SELECT
+					CHR_ID,MAIN_ID,FIELD_CODE,FIELD_NAME,FIELD_TOP,FIELD_LEFT,FIELD_HEIGHT,FIELD_WIDTH,IS_SHOW
+				FROM
+					UNTAX_PRINT_TABLE_FIELD ub
+		  ) ub where <![CDATA[ ROWNUM <= #{endrow} ]]>
+		) ub
+		WHERE <![CDATA[ ub.rowno > #{startrow} ]]>
+	</select>
+
+
+	<select id="findAllList" resultType="PrintTableField" parameterType="PrintTableField">
+		SELECT
+			CHR_ID,MAIN_ID,FIELD_CODE,FIELD_NAME,FIELD_TOP,FIELD_LEFT,FIELD_HEIGHT,FIELD_WIDTH,IS_SHOW
+		FROM
+			UNTAX_PRINT_TABLE_FIELD
+		<where>
+			<if test="mainId != null and mainId != '' ">
+				MAIN_ID=#{mainId}
+			</if>
+		</where>
+	</select>
+</mapper>
