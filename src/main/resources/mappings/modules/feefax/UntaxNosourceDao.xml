@@ -152,12 +152,12 @@
 						,wm_concat(uc.CHR_ID) as collectionId,WM_CONCAT(uc.BILL_NO) as billNo
 					</if>
 				FROM
-					UNTAX_NOSOURCE eu,ELE_ENTERPRISE ee,UNTAX_NOSOURCE_COLLECTION unc
+					UNTAX_NOSOURCE eu,ELE_ENTERPRISE ee
 				<if test="untaxNosource.stateCode == '902' or untaxNosource.stateCode == '903' or untaxNosource.stateCode == '905'">
 					,UNTAX_COLLECTION uc
 				</if>
 				WHERE
-					eu.IS_DELETED = 0 AND eu.EN_ID = ee.CHR_ID(+) AND eu.CHR_ID = unc.NOSOURCE_ID(+)
+					eu.IS_DELETED = 0 AND eu.EN_ID = ee.CHR_ID(+)
 				<if test="untaxNosource.stateCode == '001'">
 					AND eu.IS_CLAIM = 0
 				</if>
@@ -174,7 +174,7 @@
 					AND eu.IS_CLAIM = 1 AND eu.IS_AUDIT = 1  AND eu.IS_COLLECT = 0
 				</if>
 				<if test="untaxNosource.stateCode == '902'">
-					AND eu.IS_CLAIM = 1 AND eu.IS_AUDIT = 1 AND eu.IS_COLLECT = 1 AND eu.CONFIRM = 0 AND uc.CHR_ID = unc.COLLECTION_ID
+					AND eu.IS_CLAIM = 1 AND eu.IS_AUDIT = 1 AND eu.IS_COLLECT = 1 AND eu.CONFIRM = 0
 				</if>
 				<if test="untaxNosource.checkmoney != '' and untaxNosource.checkmoney != null">
 					AND eu.CHECKMONEY=#{untaxNosource.checkmoney}
@@ -209,10 +209,10 @@
 					AND eu.BANK_NO=#{untaxNosource.bankNo}
 				</if>
 				<if test="untaxNosource.stateCode == '903'">
-					AND eu.CONFIRM = 1 AND uc.CHR_ID = unc.COLLECTION_ID AND eu.CHECKEARNE=0
+					AND eu.CONFIRM = 1  AND eu.CHECKEARNE=0
 				</if>
 				<if test="untaxNosource.stateCode == '905'">
-					AND eu.IS_AUDIT = 1 AND uc.CHR_ID = unc.COLLECTION_ID AND eu.CHECKEARNE=1
+					AND eu.IS_AUDIT = 1  AND eu.CHECKEARNE=1
 				</if>
 				<if test="untaxNosource.stateCode == '902' or untaxNosource.stateCode == '903' or untaxNosource.stateCode == '905'">
 					GROUP BY

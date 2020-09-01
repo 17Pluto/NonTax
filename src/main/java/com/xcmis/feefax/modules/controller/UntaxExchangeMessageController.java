@@ -19,6 +19,8 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -277,7 +279,7 @@ public class UntaxExchangeMessageController {
                         }else {
                             bizResponseContent = new BizResponseContent("12001", "重复缴款确认");
                         }
-                    }else if (Double.valueOf(payAmount) != c.getChargemoney()){
+                    }else if (!new BigDecimal(new DecimalFormat("0.00").format(c.getChargemoney())).toString().equals(new BigDecimal(new DecimalFormat("0.00").format(Double.valueOf(payAmount))).toString())){
                         bizResponseContent = new BizResponseContent("12004", "收款金额与财政不一致");
                     } else {
                         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -322,10 +324,12 @@ public class UntaxExchangeMessageController {
                         if(hold1.equals("19")){
                             if(c.getNosourceIds() != null){
                                 if(!c.getNosourceIds().equals("")){
+                                    c.setPaymode(paymode);
                                     b = collectionsService.updatePayflag(c);
                                 }
                             }
                         }else {
+                            c.setPaymode(paymode);
                             b = collectionsService.updatePayflag(c);
                         }
                         if (!b) {
@@ -427,7 +431,7 @@ public class UntaxExchangeMessageController {
                         fail.setCode("15010");
                         fail.setMsg("对账重复发送，拒绝接收");
                         failcount++;
-                    }else if (Double.valueOf(amount) != c.getChargemoney()){
+                    }else if (!new BigDecimal(new DecimalFormat("0.00").format(c.getChargemoney())).toString().equals(new BigDecimal(new DecimalFormat("0.00").format(Double.valueOf(amount))).toString())){
                         fail.setCode("15001");
                         fail.setMsg("财政端记录信息和对账消息中明细金额不一致");
                         failcount++;
@@ -580,7 +584,7 @@ public class UntaxExchangeMessageController {
                         bizResponseContent = new BizResponseContent("11004", "缴款书已作废");
                     } else if (c.getPayflag() == 0) {
                         bizResponseContent = new BizResponseContent("99999", "失败");
-                    } else if (Double.valueOf(amount) != c.getChargemoney()) {
+                    }else if (!new BigDecimal(new DecimalFormat("0.00").format(c.getChargemoney())).toString().equals(new BigDecimal(new DecimalFormat("0.00").format(Double.valueOf(amount))).toString())){
                         bizResponseContent = new BizResponseContent("12004", "收款金额与财政不一致");
                     }else{
                         if(c.getReceivetype() == 1) {

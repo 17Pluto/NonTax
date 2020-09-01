@@ -121,6 +121,9 @@
 			UNTAX_COLLECTION
 		SET
 			PAYFLAG=#{payflag},PAYDATE=#{paydate}
+		<if test="paymode != null and paymode != '' ">
+			,PAYMODE=#{paymode}
+		</if>
 		<where>
 			<if test="reqBillNo != null and reqBillNo != '' ">
 				AND REQ_BILL_NO=#{reqBillNo}
@@ -494,6 +497,12 @@
 		WHERE
 			uc.IS_DELETED=0 and uc.BILLTYPE_ID = ub.CHR_ID and UC.EN_ID = EIE.CHR_ID and UC.CONSIGNEE_EN_ID = EIE1.CHR_ID(+) and uc.PAYERID = eu.CHR_ID(+) and uc.CREATE_USER = su.USER_ID and UC.PM_ID = eup.CHR_ID
 			AND vur.CHR_ID = uc.RECEIVERID and uc.ERASEFLAG=0 AND uc.CHECK_FLAG = 1
+		<if test="collections.paymode == '11'">
+			AND uc.paymode='11'
+		</if>
+		<if test="collections.paymode == '-1'">
+			AND uc.paymode&lt;&gt;'11'  and uc.paymode is not null
+		</if>
 		<if test="collections.receiverid != null and collections.receiverid != '' ">
 			AND uc.RECEIVERID=#{collections.receiverid}
 		</if>
@@ -574,6 +583,13 @@
 		<if test="receiverid != null and receiverid != '' ">
 			AND RECEIVERID=#{receiverid}
 		</if>
+		<if test="paymode == '11'">
+			AND paymode='11'
+		</if>
+		<if test="paymode == '-1'">
+			AND paymode&lt;&gt;'11'  and paymode is not null
+		</if>
+
 		<if test="payerName != null and payerName != '' ">
 			AND uc.PAYER like CONCAT(CONCAT('%',#{payerName}),'%')
 		</if>

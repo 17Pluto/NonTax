@@ -316,12 +316,12 @@ public class UntaxNosourceController {
 
             if(list != null){
                 if(list.size() > 0){
-                    return new Result<>(Globals.OP_FAILURE, Globals.FAILED_CODE);
+                    return new Result<>(false, "数据已绑定无法删除", Globals.SUCCESS_CODE);
                 }
             }
 
             if(untaxNosource.getIsCollect() == 1){
-                return new Result<>(Globals.OP_FAILURE, Globals.FAILED_CODE);
+                return new Result<>(false, "数据已绑定无法删除", Globals.SUCCESS_CODE);
             }
 
             boolean b = untaxNosourceService.delete(untaxNosource);
