@@ -1,6 +1,7 @@
 package com.xcmis.feefax.modules.controller;
 
 
+//import com.alibaba.fastjson.JSONObject;
 import com.xcmis.feefax.modules.entity.*;
 import com.xcmis.feefax.modules.entity.Collections;
 import com.xcmis.feefax.modules.service.*;
@@ -108,16 +109,26 @@ public class UntaxExchangeMessageController {
             bi.setContent(str);
             bankInfoService.insert(bi);
 
-            JSONObject jsonObject = JSONObject.fromObject(str);
 
+            /**
+             * net.json会自动转科学计数法 损失精度
+             */
+//            JSONObject jsonObject = JSONObject.fromObject(str);
+//
+//            Map<String, String> map = new HashMap<>();
+//
+//            Iterator<String> ir = jsonObject.keys();
+//            while (ir.hasNext()) {
+//                String keyName = (String) ir.next();
+//                map.put(keyName, jsonObject.getString(keyName));
+//            }
+
+            com.alibaba.fastjson.JSONObject jsonObject = (com.alibaba.fastjson.JSONObject) com.alibaba.fastjson.JSONObject.parse(str);
             Map<String, String> map = new HashMap<>();
-
-            Iterator<String> ir = jsonObject.keys();
-            while (ir.hasNext()) {
-                String keyName = (String) ir.next();
+            for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
+                String keyName = (String) entry.getKey();
                 map.put(keyName, jsonObject.getString(keyName));
             }
-
 
             //设定类容为json的格式
             response.setContentType("application/json;charset=GBK");
@@ -133,9 +144,9 @@ public class UntaxExchangeMessageController {
                 String reqBillNo = bizContentObject.getString("billno");
 
 
-                com.xcmis.feefax.modules.entity.Collections collections = new com.xcmis.feefax.modules.entity.Collections();
+                Collections collections = new Collections();
                 collections.setReqBillNo(reqBillNo);
-                com.xcmis.feefax.modules.entity.Collections c = collectionsService.get(collections);
+                Collections c = collectionsService.get(collections);
 
 
                 BizResponseContent bizResponseContent;
@@ -244,10 +255,12 @@ public class UntaxExchangeMessageController {
             } else if ("wp.outer.bill.pay".equals(map.get("method"))) {
                 boolean validSend = false;
                 String bizContent = map.get("biz_content");
+//                System.out.println("bizContent="+bizContent);
                 JSONObject bizContentObject = JSONObject.fromObject(bizContent);
                 String reqBillNo = bizContentObject.getString("billno");
                 String payDatetime = bizContentObject.getString("pay_datetime");
                 String payAmount = bizContentObject.getString("pay_amount");
+//                System.out.println("payAmount="+payAmount);
                 String paymode = bizContentObject.getString("paymode");
 
                 String attach_info = bizContentObject.getString("attach_info");
@@ -263,11 +276,14 @@ public class UntaxExchangeMessageController {
                 }
 
 
-                com.xcmis.feefax.modules.entity.Collections collections = new com.xcmis.feefax.modules.entity.Collections();
+                Collections collections = new Collections();
                 collections.setReqBillNo(reqBillNo);
-                com.xcmis.feefax.modules.entity.Collections c = collectionsService.get(collections);
+                Collections c = collectionsService.get(collections);
 
                 BizResponseContent bizResponseContent;
+//                System.out.println(c.getChargemoney());
+//                System.out.println(payAmount);
+//                System.out.println(new BigDecimal(new DecimalFormat("0.00").format(c.getChargemoney())).toString().equals(new BigDecimal(new DecimalFormat("0.00").format(Double.valueOf(payAmount))).toString()));
                 if (c == null) {
                     bizResponseContent = new BizResponseContent("11001", "不存在的缴款码/非税缴款书编号查询");
                 }else{
@@ -416,9 +432,9 @@ public class UntaxExchangeMessageController {
                     String reqBillNo = jsonObj.getString("billno");
                     String amount = jsonObj.getString("amount");
 
-                    com.xcmis.feefax.modules.entity.Collections collections = new com.xcmis.feefax.modules.entity.Collections();
+                    Collections collections = new Collections();
                     collections.setReqBillNo(reqBillNo);
-                    com.xcmis.feefax.modules.entity.Collections c = collectionsService.get(collections);
+                    Collections c = collectionsService.get(collections);
                     bankindex = c.getBankNo();
 
                     Fail fail = new Fail();
@@ -571,9 +587,9 @@ public class UntaxExchangeMessageController {
                 String billdate = bizContentObject.getString("billdate");
 
 
-                com.xcmis.feefax.modules.entity.Collections collections = new com.xcmis.feefax.modules.entity.Collections();
+                Collections collections = new Collections();
                 collections.setReqBillNo(reqBillNo);
-                com.xcmis.feefax.modules.entity.Collections c = collectionsService.get(collections);
+                Collections c = collectionsService.get(collections);
 
 
 

@@ -111,7 +111,7 @@
 					</if>
 						AND uec.BATCHID = ueb.CHR_ID
 					<if test="EduImportStuInfo.stateCode == '902'">
-						AND uec.IS_COLLECTION = 1
+						AND uec.IS_COLLECTION = 1 AND uec.PAYFLAG = 0 AND uec.ISEXCHANGE = 0
 					</if>
 					<if test="EduImportStuInfo.stateCode == '903'">
 						AND uec.IS_COLLECTION = 1  AND uec.PAYFLAG = 1 AND uec.ISEXCHANGE = 0
