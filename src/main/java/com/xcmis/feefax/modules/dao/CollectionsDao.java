@@ -47,7 +47,7 @@ public interface CollectionsDao extends IBaseDao<Collections> {
      */
     public List<Collections> getCollectionsByCondition(Map<String, Object> map);
 
-    public long getCollectionsTotal(Collections collections);
+    public long getCollectionsTotal(Map<String, Object> map);
 
     /**
      * 更新核收状态和核收时间

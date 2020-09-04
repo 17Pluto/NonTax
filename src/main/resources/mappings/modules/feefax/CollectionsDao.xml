@@ -521,8 +521,27 @@
 		<if test="collections.stateCode == '905'">
 			AND uc.PAYFLAG=1
 		</if>
-		<if test="collections.enId != null and collections.enId != '' ">
-			AND uc.EN_ID=#{collections.enId}
+		<if test="belongType != '007'.toString()">
+			AND (uc.EN_ID in
+			<foreach collection="incomeEnterpriseList" index="index" item="incomeEnterprise" open="(" separator="," close=")">
+				#{incomeEnterprise.enId}
+			</foreach>
+			OR uc.CONSIGNEE_EN_ID IN
+			<foreach collection="incomeEnterpriseList" index="index" item="incomeEnterprise" open="(" separator="," close=")">
+				#{incomeEnterprise.enId}
+			</foreach>
+			)
+		</if>
+		<if test="belongType == '007'.toString() and collections.enId != null and collections.enId != '' ">
+			AND (uc.EN_ID in
+			<foreach collection="incomeEnterpriseList" index="index" item="incomeEnterprise" open="(" separator="," close=")">
+				#{incomeEnterprise.enId}
+			</foreach>
+			OR uc.CONSIGNEE_EN_ID IN
+			<foreach collection="incomeEnterpriseList" index="index" item="incomeEnterprise" open="(" separator="," close=")">
+				#{incomeEnterprise.enId}
+			</foreach>
+			)
 		</if>
 		<if test="collections.beginCheckdate != null and collections.beginCheckdate != '' ">
 			AND uc.CHECKDATE &gt;= #{collections.beginCheckdate}
@@ -573,73 +592,92 @@
 	</select>
 
 	<!--核收数据管理分页-->
-	<select id="getCollectionsTotal" resultType="long" parameterType="Collections">
+	<select id="getCollectionsTotal" resultType="long" parameterType="java.util.HashMap">
 		SELECT
 			count(uc.CHR_ID) as num
 		FROM
 			UNTAX_COLLECTION uc, SYS_USERMANAGE su, ELE_UNTAXACCOUNT eu
 		WHERE
 			uc.IS_DELETED = '0' AND uc.CREATE_USER = su.USER_ID and uc.PAYERID = eu.CHR_ID(+)  and uc.ERASEFLAG=0 AND uc.CHECK_FLAG = 1
-		<if test="receiverid != null and receiverid != '' ">
-			AND RECEIVERID=#{receiverid}
+		<if test="collections.receiverid != null and collections.receiverid != '' ">
+			AND RECEIVERID=#{collections.receiverid}
 		</if>
-		<if test="paymode == '11'">
+		<if test="collections.paymode == '11'">
 			AND paymode='11'
 		</if>
-		<if test="paymode == '-1'">
+		<if test="collections.paymode == '-1'">
 			AND paymode&lt;&gt;'11'  and paymode is not null
 		</if>
 
-		<if test="payerName != null and payerName != '' ">
-			AND uc.PAYER like CONCAT(CONCAT('%',#{payerName}),'%')
+		<if test="collections.payerName != null and collections.payerName != '' ">
+			AND uc.PAYER like CONCAT(CONCAT('%',#{collections.payerName}),'%')
 		</if>
-		<if test="stateCode == '001'">
+		<if test="collections.stateCode == '001'">
 			AND uc.CHECKEARNE = 0
 		</if>
-		<if test="stateCode == '002'">
+		<if test="collections.stateCode == '002'">
 			AND uc.CHECKEARNE=1
 		</if>
-		<if test="stateCode == '904'">
+		<if test="collections.stateCode == '904'">
 			AND uc.PAYFLAG=0
 		</if>
-		<if test="stateCode == '905'">
+		<if test="collections.stateCode == '905'">
 			AND uc.PAYFLAG=1
 		</if>
-		<if test="enId != null and enId != '' ">
-			AND uc.EN_ID=#{enId}
+		<if test="belongType != '007'.toString()">
+			AND (uc.EN_ID in
+			<foreach collection="incomeEnterpriseList" index="index" item="incomeEnterprise" open="(" separator="," close=")">
+				#{incomeEnterprise.enId}
+			</foreach>
+			OR uc.CONSIGNEE_EN_ID IN
+			<foreach collection="incomeEnterpriseList" index="index" item="incomeEnterprise" open="(" separator="," close=")">
+				#{incomeEnterprise.enId}
+			</foreach>
+			)
 		</if>
-		<if test="beginMakedate != null and beginMakedate != '' ">
-			AND uc.MAKEDATE &gt;= #{beginMakedate}
+		<if test="belongType == '007'.toString() and collections.enId != null and collections.enId != '' ">
+			AND (uc.EN_ID in
+			<foreach collection="incomeEnterpriseList" index="index" item="incomeEnterprise" open="(" separator="," close=")">
+				#{incomeEnterprise.enId}
+			</foreach>
+			OR uc.CONSIGNEE_EN_ID IN
+			<foreach collection="incomeEnterpriseList" index="index" item="incomeEnterprise" open="(" separator="," close=")">
+				#{incomeEnterprise.enId}
+			</foreach>
+			)
 		</if>
-		<if test="endMakedate != null and endMakedate != '' ">
-			AND uc.MAKEDATE &lt;= #{endMakedate}
+		<if test="collections.beginMakedate != null and collections.beginMakedate != '' ">
+			AND uc.MAKEDATE &gt;= #{collections.beginMakedate}
 		</if>
-		<if test="beginCheckdate != null and beginCheckdate != '' ">
-			AND uc.CHECKDATE &gt;= #{beginCheckdate}
+		<if test="collections.endMakedate != null and collections.endMakedate != '' ">
+			AND uc.MAKEDATE &lt;= #{collections.endMakedate}
 		</if>
-		<if test="endCheckdate != null and endCheckdate != '' ">
-			AND uc.CHECKDATE &lt;= #{endCheckdate}
+		<if test="collections.beginCheckdate != null and collections.beginCheckdate != '' ">
+			AND uc.CHECKDATE &gt;= #{collections.beginCheckdate}
 		</if>
-		<if test="pmId != null and pmId != '' ">
-			AND uc.PM_ID = #{pmId}
+		<if test="collections.endCheckdate != null and collections.endCheckdate != '' ">
+			AND uc.CHECKDATE &lt;= #{collections.endCheckdate}
 		</if>
-		<if test="billtypeId != null and billtypeId != '' ">
-			AND uc.BILLTYPE_ID = #{billtypeId}
+		<if test="collections.pmId != null and collections.pmId != '' ">
+			AND uc.PM_ID = #{collections.pmId}
 		</if>
-		<if test="beginBillNo != null and beginBillNo != '' ">
-			AND uc.BILL_NO >= #{beginBillNo}
+		<if test="collections.billtypeId != null and collections.billtypeId != '' ">
+			AND uc.BILLTYPE_ID = #{collections.billtypeId}
 		</if>
-		<if test="endBillNo != null and endBillNo != '' ">
-			AND uc.BILL_NO &lt;= #{endBillNo}
+		<if test="collections.beginBillNo != null and collections.beginBillNo != '' ">
+			AND uc.BILL_NO >= #{collections.beginBillNo}
 		</if>
-		<if test="incitemid != null and incitemid != '' ">
-			AND uc.chr_id in(select MAIN_ID from UNTAX_COLLECTIONDETAIL where INCITEMID=#{incitemid})
+		<if test="collections.endBillNo != null and collections.endBillNo != '' ">
+			AND uc.BILL_NO &lt;= #{collections.endBillNo}
 		</if>
-		<if test="nosourceIds != null and nosourceIds != '' ">
-			<if test="nosourceIds == '0'.toString()">
+		<if test="collections.incitemid != null and collections.incitemid != '' ">
+			AND uc.chr_id in(select MAIN_ID from UNTAX_COLLECTIONDETAIL where INCITEMID=#{collections.incitemid})
+		</if>
+		<if test="collections.nosourceIds != null and collections.nosourceIds != '' ">
+			<if test="collections.nosourceIds == '0'.toString()">
 				AND uc.NOSOURCE_IDS is null
 			</if>
-			<if test="nosourceIds == '1'.toString()">
+			<if test="collections.nosourceIds == '1'.toString()">
 				AND uc.NOSOURCE_IDS is not null
 			</if>
 		</if>

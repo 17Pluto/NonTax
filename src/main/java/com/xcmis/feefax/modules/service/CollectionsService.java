@@ -492,12 +492,12 @@ public class CollectionsService {
 
     /**
      * 核收数据分页
-     * @param collections
+     * @param map
      * @return
      */
-    public long getCollectionsTotal(Collections collections){
+    public long getCollectionsTotal(Map<String, Object> map){
         try{
-            long total = collectionsDao.getCollectionsTotal(collections);
+            long total = collectionsDao.getCollectionsTotal(map);
             return total;
         }catch(Exception e){
             e.printStackTrace();

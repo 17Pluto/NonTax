@@ -17,6 +17,8 @@ import com.xcmis.framework.common.utils.UserUtils;
 import com.xcmis.framework.common.vo.Result;
 import com.xcmis.framework.jwt.JwtTokenUtil;
 import com.xcmis.framework.modules.entity.User;
+import com.xcmis.framework.modules.entity.UserOrg;
+import com.xcmis.framework.modules.service.UserOrgService;
 import com.xcmis.framework.modules.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import org.apache.shiro.SecurityUtils;
@@ -74,6 +76,17 @@ public class CollectionsController {
 
     @Autowired
     private IncomeEnterpriseService incomeEnterpriseService;
+
+
+    @Autowired
+    private IenusermanagService ienusermanagService;
+
+    @Autowired
+    private UserOrgService userOrgService;
+
+
+    @Autowired
+    private UnitItemService unitItemService;
 
 
     @Value("${issubaccount}")
@@ -692,7 +705,7 @@ public class CollectionsController {
                 List<EduImportStuInfoDetail> eduImportStuInfoDetailList = eduStuInfoService.getEduStuInfoDetailList(mapIn);
                 for(EduImportStuInfoDetail c : eduImportStuInfoDetailList) {
                     CollectionsDetail collectionsDetail = new CollectionsDetail();
-                    collectionsDetail.setIncitemCode(c.getIncitemid());
+                    collectionsDetail.setIncitemCode(c.getIncitemCode());
                     collectionsDetail.setIncitemName(c.getStuIncitemName());
                     collectionsDetail.setMeasure(c.getMeasure());
                     //collectionsDetail.setChargestandard(c.getChargestandard());
@@ -873,6 +886,90 @@ public class CollectionsController {
     @ResponseBody
     public Result<Map<String,Object>> getCollectionsByCondition(String page, String rows, String sort,
                                                                 String order, Collections collections) {
+        String belongType = "";
+        List<IncomeEnterprise> list = new ArrayList<>();
+
+        String userId = UserUtils.getUserId();
+
+        User user = new User();
+        user.setUserId(userId);
+        user = userService.get(user);
+        belongType = user.getBelongType();
+
+
+        if(collections.getEnId().equals("")) {
+            if(user.getBelongType().equals("007")){
+
+            }else {
+                Ienusermanag ienusermanag = new Ienusermanag();
+                ienusermanag.setUserId(user.getUserId());
+                List<Ienusermanag> IenusermanagList = ienusermanagService.findAllList(ienusermanag);
+
+
+                for (Ienusermanag i : IenusermanagList) {
+                    UserOrg userOrg = new UserOrg();
+                    userOrg.setUserId(user.getUserId());
+                    userOrg.setOrgId(i.getIenId());
+                    List<UserOrg> userOrgList = userOrgService.findAllList(userOrg);
+
+                    if (userOrgList != null) {
+                        if (userOrgList.size() > 0) {
+                            IncomeEnterprise incomeEnterprise = new IncomeEnterprise();
+                            incomeEnterprise.setChrId(i.getIenId());
+
+                            List<IncomeEnterprise> incomeEnterpriseList = incomeEnterpriseService.getIncomeEnterpriseByChrId(incomeEnterprise);
+                            for (IncomeEnterprise ie : incomeEnterpriseList) {
+                                list.add(ie);
+                            }
+                        }
+                    }
+                }
+
+
+                UnitItem unitItem = new UnitItem();
+                unitItem.setUnitId(user.getBelongOrg());
+                List<UnitItem> unitItemList = unitItemService.getUnitItemByUnitId(unitItem);
+
+
+                for (UnitItem ui : unitItemList) {
+                    IncomeEnterprise incomeEnterprise = new IncomeEnterprise();
+                    incomeEnterprise.setChrId(ui.getIenId());
+                    List<IncomeEnterprise> incomeEnterpriseList = incomeEnterpriseService.getIncomeEnterpriseByChrId(incomeEnterprise);
+                    for (IncomeEnterprise ie : incomeEnterpriseList) {
+                        boolean b = true;
+                        if (list.size() == 0) {
+                            list.add(ie);
+                        } else {
+                            for (IncomeEnterprise i : list) {
+                                if (i.getChrId().equals(ie.getChrId())) {
+                                    b = false;
+                                    break;
+                                }
+                            }
+                            if (b) {
+                                list.add(ie);
+                            }
+                        }
+                    }
+                }
+
+                java.util.Collections.sort(list);
+            }
+        }else{
+            String[] enIds = collections.getEnId().split("#");
+            for (String enId : enIds) {
+                IncomeEnterprise incomeEnterprise = new IncomeEnterprise();
+                incomeEnterprise.setChrId(enId);
+
+                List<IncomeEnterprise> incomeEnterpriseList = incomeEnterpriseService.getIncomeEnterpriseByChrId(incomeEnterprise);
+                for (IncomeEnterprise ie : incomeEnterpriseList) {
+                    list.add(ie);
+                }
+            }
+        }
+
+
+
         Map<String, Object> mapIn = new HashMap<>();
 
         String stateCode = collections.getStateCode();
@@ -880,20 +977,26 @@ public class CollectionsController {
         //collections.setReceivetype(1) ;
         //collections.setCreateUser(UserUtils.getUserId());
         //核收分页
-        long total = collectionsService.getCollectionsTotal(collections);
+
+
+        mapIn.put("collections", collections);
+        mapIn.put("incomeEnterpriseList", list);
+        mapIn.put("belongType", belongType);
+
+        long total = collectionsService.getCollectionsTotal(mapIn);
 
         int startrow = (Integer.parseInt(page) - 1) * Integer.parseInt(rows);
         mapIn.put("startrow", startrow);
         mapIn.put("endrow", startrow + Integer.parseInt(rows));
         mapIn.put("sort", sort);
         mapIn.put("order", order);
-        mapIn.put("collections", collections);
+
         //核收数据全部
-        List<Collections> list = collectionsService.getCollectionsByCondition(mapIn);
+        List<Collections> collectionsList = collectionsService.getCollectionsByCondition(mapIn);
 
         Map<String,Object> mapOut = new HashMap<>();
         mapOut.put("total", total);//实际的行数
-        mapOut.put("rows", list);//要以JSON格式返回
+        mapOut.put("rows", collectionsList);//要以JSON格式返回
 
         return new Result<>(mapOut, Globals.OP_SUCCESS, Globals.SUCCESS_CODE);
     }
@@ -950,7 +1053,7 @@ public class CollectionsController {
             List<EduImportStuInfoDetail> eduImportStuInfoDetailList = eduStuInfoService.getEduStuInfoDetailList(mapIn);
             for(EduImportStuInfoDetail c : eduImportStuInfoDetailList) {
                 CollectionsDetail cd = new CollectionsDetail();
-                cd.setIncitemCode(c.getIncitemid());
+                cd.setIncitemCode(c.getIncitemCode());
                 cd.setIncitemName(c.getStuIncitemName());
                 cd.setMeasure(c.getMeasure());
                 //collectionsDetail.setChargestandard(c.getChargestandard());

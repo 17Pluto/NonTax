@@ -260,6 +260,13 @@ public class IncomeEnterpriseController {
                     }
                 }
             }
+            for(int i = 0; i < list.size() - 1; i++){
+                for(int j = list.size() - 1; j > i; j--){
+                    if(list.get(j).getChrId().equals(list.get(i).getChrId()))  {
+                        list.remove(j);
+                    }
+                }
+            }
         }else if(user.getBelongType().equals("007")) {
             IncomeEnterprise incomeEnterprise = new IncomeEnterprise();
             list = incomeEnterpriseService.findAllList(incomeEnterprise);
